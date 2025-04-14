@@ -1,0 +1,9 @@
+version: "2"
+sql:
+  - engine: "mysql"
+    queries: "sql/site/query.sql"
+    schema: "sql/site/schema.sql"
+    gen:
+      go:
+        package: "site"
+        out: "internal/domain/site"
