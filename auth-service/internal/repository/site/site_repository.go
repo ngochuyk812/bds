@@ -97,6 +97,7 @@ func (r *siteRepository) GetSitesPaging(ctx context.Context, page, size int32) (
 		data, err := r.readQueries.GetSitesPaging(ctx, site.GetSitesPagingParams{
 			Limit:  limit,
 			Offset: offset,
+			Name:   2,
 		})
 		if err == nil {
 			res.Items = data
