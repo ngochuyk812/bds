@@ -1,6 +1,7 @@
 package bus
 
 import (
+	commands_auth "auth_service/internal/app/commands/auth"
 	commands_site "auth_service/internal/app/commands/site"
 	queries_site "auth_service/internal/app/queries/site"
 	"auth_service/internal/infra"
@@ -19,6 +20,12 @@ func InjectBus(c infra.Cabin) {
 		Cabin: c,
 	})
 	bus_core.RegisterHandler(c.GetInfra().GetMediator(), queries_site.FetchSitesQuery{}, &queries_site.FetchSitesHandler{
+		Cabin: c,
+	})
+	bus_core.RegisterHandler(c.GetInfra().GetMediator(), commands_auth.LoginCommand{}, &commands_auth.LoginHandler{
+		Cabin: c,
+	})
+	bus_core.RegisterHandler(c.GetInfra().GetMediator(), commands_auth.SignUpCommand{}, &commands_auth.SignUpCommandHandler{
 		Cabin: c,
 	})
 }

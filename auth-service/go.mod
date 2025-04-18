@@ -4,14 +4,14 @@ go 1.24.1
 
 require (
 	connectrpc.com/connect v1.18.1
-	github.com/ngochuyk812/proto-bds v1.0.5
+	github.com/ngochuyk812/proto-bds v1.0.10
 	go.uber.org/zap v1.27.0 // indirect
 
 )
 
 require (
 	github.com/Microsoft/go-winio v0.6.2
-	github.com/ngochuyk812/building_block v0.1.10
+	github.com/ngochuyk812/building_block v0.1.11
 )
 
 require (
@@ -24,6 +24,7 @@ require (
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/text v0.24.0 // indirect
 )
 
 require (

@@ -7,3 +7,10 @@ sql:
       go:
         package: "site"
         out: "internal/domain/site"
+  - engine: "mysql"
+    queries: "sql/user/query.sql"
+    schema: "sql/user/schema.sql"
+    gen:
+      go:
+        package: "user"
+        out: "internal/domain/user"

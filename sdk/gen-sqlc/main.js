@@ -37,29 +37,29 @@ const generateDeleteByGuidQuery = (table) =>
   `-- name: Delete${capitalize(table)}ByGuid :exec\nUPDATE ${table}s SET deletedAt = ? WHERE guid = ?;`;
 
 // Paging query
-const generatePagingQuery = (table) =>
+const generatePagingQuery = (table, requireSite) =>
   `-- name: Get${capitalize(table)}sPaging :many\nSELECT * FROM ${table}s WHERE deletedAt IS NULL ORDER BY createdAt DESC LIMIT ? OFFSET ?;`;
 
 // Capitalize function
 const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 // Gộp tất cả
-const generateAllQueries = (table, columns) => {
+const generateAllQueries = (table, columns, requireSite = true) => {
   return [
     generateInsertQuery(table, columns),
-    generateSelectQueryById(table),
-    generateSelectQueryByGuid(table),
+    generateSelectQueryById(table, requireSite),
+    generateSelectQueryByGuid(table, requireSite),
     generateUpdateQuery(table, columns),
     generateUpdateByGuidQuery(table, columns),
     generateDeleteQuery(table),
     generateDeleteByGuidQuery(table),
-    generatePagingQuery(table)
+    generatePagingQuery(table, requireSite)
   ].join("\n\n");
 };
 
 // Example
-const tableName = "site";
-const columns = ["guid", "siteId", "name", "createdAt", "deletedAt", "updatedAt"];
+const tableName = "user";
+const columns = ["guid", "siteId", "email", "hash_password", "salt", "createdAt", "deletedAt", "updatedAt"];
 
 const sqlQueries = generateAllQueries(tableName, columns);
 
