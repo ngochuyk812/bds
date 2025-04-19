@@ -2,35 +2,44 @@ package main
 
 import (
 	"os"
-	"os/signal"
+	"sender_service/internal/app/events"
 	"sender_service/internal/infra"
 	"sender_service/internal/infra/bus"
-	"sender_service/internal/repository"
 
 	"fmt"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	infrastructurecore "github.com/ngochuyk812/building_block/infrastructure/core"
+	"github.com/ngochuyk812/building_block/infrastructure/eventbus"
+	"github.com/ngochuyk812/building_block/infrastructure/eventbus/kafka"
 	"github.com/ngochuyk812/building_block/pkg/config"
+)
+
+var (
+	brokers = os.Getenv("BROKERS_EVENTBUS")
+	topic   = os.Getenv("TOPIC_EVENTBUS")
+	group   = os.Getenv("GROUP_ID_EVENTBUS")
 )
 
 func main() {
 	policiesPath := &map[string][]string{}
 	config := config.NewConfigEnv()
 	config.PoliciesPath = policiesPath
-	infa := infrastructurecore.NewInfra(config)
-	// infa.InjectSQL(databases.MYSQL)
-	// infa.InjectCache(config.RedisConnect, config.RedisPass)
-	unf := repository.NewUnitOfWork(infa.GetDatabase().GetWriteDB(), infa.GetDatabase().GetReadDB())
-	cabin := infra.NewCabin(infa, unf)
+	inra := infrastructurecore.NewInfra(config)
+	cabin := infra.NewCabin(inra)
 	bus.InjectBus(cabin)
-	app := infrastructurecore.NewServe(":"+config.Port, infa.GetLogger())
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go app.Run()
-	<-c
-	fmt.Println("shutting down...")
+	consumer, err := kafka.NewConsumer(brokers, topic, group)
+	if err != nil {
+		panic(fmt.Sprintf("cannot connect consumer: %s", err.Error()))
+	}
 
+	registerHandlerEventbus(consumer, cabin)
+	go consumer.Run()
+
+}
+
+func registerHandlerEventbus(consumer eventbus.Consumer, cabin infra.Cabin) {
+	consumer.RegisterHandler(events.NewIntegrationEventSendMailHandler(cabin))
 }
