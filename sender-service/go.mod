@@ -1,4 +1,4 @@
-module auth_service
+module sender_service
 
 go 1.24.1
 
