@@ -25,7 +25,6 @@ func main() {
 	unf := repository.NewUnitOfWork(infa.GetDatabase().GetWriteDB(), infa.GetDatabase().GetReadDB())
 	cabin := infra.NewCabin(infa, unf)
 	bus.InjectBus(cabin)
-
 	app := infrastructurecore.NewServe(":"+config.Port, infa.GetLogger())
 
 	c := make(chan os.Signal, 1)
