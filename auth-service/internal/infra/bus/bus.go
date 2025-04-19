@@ -10,22 +10,26 @@ import (
 )
 
 func InjectBus(c infra.Cabin) {
-	bus_core.RegisterHandler(c.GetInfra().GetMediator(), commands_site.CreateSiteCommand{}, &commands_site.CreateSiteHandler{
+	mediator := c.GetInfra().GetMediator()
+	bus_core.RegisterHandler(mediator, commands_site.CreateSiteCommand{}, &commands_site.CreateSiteHandler{
 		Cabin: c,
 	})
-	bus_core.RegisterHandler(c.GetInfra().GetMediator(), commands_site.UpdateSiteCommand{}, &commands_site.UpdateSiteHandler{
+	bus_core.RegisterHandler(mediator, commands_site.UpdateSiteCommand{}, &commands_site.UpdateSiteHandler{
 		Cabin: c,
 	})
-	bus_core.RegisterHandler(c.GetInfra().GetMediator(), commands_site.DeleteSiteCommand{}, &commands_site.DeleteSiteHandler{
+	bus_core.RegisterHandler(mediator, commands_site.DeleteSiteCommand{}, &commands_site.DeleteSiteHandler{
 		Cabin: c,
 	})
-	bus_core.RegisterHandler(c.GetInfra().GetMediator(), queries_site.FetchSitesQuery{}, &queries_site.FetchSitesHandler{
+	bus_core.RegisterHandler(mediator, queries_site.FetchSitesQuery{}, &queries_site.FetchSitesHandler{
 		Cabin: c,
 	})
-	bus_core.RegisterHandler(c.GetInfra().GetMediator(), commands_auth.LoginCommand{}, &commands_auth.LoginHandler{
+	bus_core.RegisterHandler(mediator, commands_auth.LoginCommand{}, &commands_auth.LoginHandler{
 		Cabin: c,
 	})
-	bus_core.RegisterHandler(c.GetInfra().GetMediator(), commands_auth.SignUpCommand{}, &commands_auth.SignUpCommandHandler{
+	bus_core.RegisterHandler(mediator, commands_auth.SignUpCommand{}, &commands_auth.SignUpCommandHandler{
+		Cabin: c,
+	})
+	bus_core.RegisterHandler(mediator, commands_auth.VerifySignUpCommand{}, &commands_auth.VerifySignUpCommandHandler{
 		Cabin: c,
 	})
 }

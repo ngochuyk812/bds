@@ -15,6 +15,7 @@ type User struct {
 	Email        string
 	HashPassword string
 	Salt         string
+	Active       sql.NullBool
 	Createdat    int64
 	Updatedat    sql.NullInt64
 	Deletedat    sql.NullInt64

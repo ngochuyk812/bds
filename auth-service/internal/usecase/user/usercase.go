@@ -6,6 +6,12 @@ type GetUserByEmailUsecase struct {
 	Email string
 }
 
+type UpdateUserUsercase struct {
+	Guid   string
+	Email  string
+	Active bool
+}
+
 type CreateUserUsercase struct {
 	Guid         string
 	Email        string

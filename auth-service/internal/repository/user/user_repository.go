@@ -14,6 +14,7 @@ import (
 type UserRepository interface {
 	GetUserByEmail(ctx context.Context, arg usercase.GetUserByEmailUsecase) (*user.User, error)
 	CreateUser(ctx context.Context, arg *usercase.CreateUserUsercase) error
+	UpdateUser(ctx context.Context, arg *usercase.UpdateUserUsercase) error
 }
 
 type userRepository struct {
@@ -34,6 +35,26 @@ func (u *userRepository) CreateUser(ctx context.Context, arg *usercase.CreateUse
 		HashPassword: arg.HashPassword,
 		Salt:         arg.Salt,
 		Createdat:    time.Now().Unix(),
+	})
+
+	return err
+}
+
+func (u *userRepository) UpdateUser(ctx context.Context, arg *usercase.UpdateUserUsercase) error {
+	err := u.readQueries.UpdateUserByGuid(ctx, user.UpdateUserByGuidParams{
+		Email: sql.NullString{
+			String: arg.Email,
+			Valid:  len(arg.Email) > 0,
+		},
+		Guid: arg.Guid,
+		UpdatedAt: sql.NullInt64{
+			Int64: time.Now().Unix(),
+			Valid: true,
+		},
+		Active: sql.NullBool{
+			Bool:  arg.Active,
+			Valid: true,
+		},
 	})
 
 	return err

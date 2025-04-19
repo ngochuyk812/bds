@@ -45,6 +45,18 @@ func (s *authServerHandler) SignUp(ctx context.Context, req *connect.Request[aut
 }
 
 // VerifySignUp implements authv1connect.AuthServiceHandler.
-func (s *authServerHandler) VerifySignUp(context.Context, *connect.Request[authv1.VerifySignUpRequest]) (*connect.Response[authv1.VerifySignUpResponse], error) {
-	panic("unimplemented")
+func (s *authServerHandler) VerifySignUp(ctx context.Context, req *connect.Request[authv1.VerifySignUpRequest]) (*connect.Response[authv1.VerifySignUpResponse], error) {
+	res := connect.NewResponse(&authv1.VerifySignUpResponse{
+		Status: &statusmsg.StatusMessage{},
+	})
+	result, err := bus_core.Send[commands_auth.VerifySignUpCommand, commands_auth.VerifySignUpCommandResponse](s.cabin.GetInfra().GetMediator(), ctx, commands_auth.VerifySignUpCommand{
+		Email: req.Msg.GetEmail(),
+		Otp:   req.Msg.GetOtp(),
+	})
+	if err != nil {
+		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+		return res, err
+	}
+	res.Msg.Status = result.StatusMessage
+	return res, err
 }

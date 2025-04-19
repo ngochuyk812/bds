@@ -64,7 +64,7 @@ func (q *Queries) DeleteUserById(ctx context.Context, arg DeleteUserByIdParams) 
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, guid, siteid, email, hash_password, salt, createdat, updatedat, deletedat FROM users WHERE deletedAt IS NULL AND siteId = ? AND email = ?
+SELECT id, guid, siteid, email, hash_password, salt, active, createdat, updatedat, deletedat FROM users WHERE deletedAt IS NULL AND siteId = ? AND email = ?
 `
 
 type GetUserByEmailParams struct {
@@ -82,6 +82,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, arg GetUserByEmailParams) 
 		&i.Email,
 		&i.HashPassword,
 		&i.Salt,
+		&i.Active,
 		&i.Createdat,
 		&i.Updatedat,
 		&i.Deletedat,
@@ -90,7 +91,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, arg GetUserByEmailParams) 
 }
 
 const getUserByGuid = `-- name: GetUserByGuid :one
-SELECT id, guid, siteid, email, hash_password, salt, createdat, updatedat, deletedat FROM users WHERE deletedAt IS NULL AND guid = ?
+SELECT id, guid, siteid, email, hash_password, salt, active, createdat, updatedat, deletedat FROM users WHERE deletedAt IS NULL AND guid = ?
 `
 
 func (q *Queries) GetUserByGuid(ctx context.Context, guid string) (User, error) {
@@ -103,6 +104,7 @@ func (q *Queries) GetUserByGuid(ctx context.Context, guid string) (User, error) 
 		&i.Email,
 		&i.HashPassword,
 		&i.Salt,
+		&i.Active,
 		&i.Createdat,
 		&i.Updatedat,
 		&i.Deletedat,
@@ -111,7 +113,7 @@ func (q *Queries) GetUserByGuid(ctx context.Context, guid string) (User, error) 
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, guid, siteid, email, hash_password, salt, createdat, updatedat, deletedat FROM users WHERE deletedAt IS NULL AND id = ?
+SELECT id, guid, siteid, email, hash_password, salt, active, createdat, updatedat, deletedat FROM users WHERE deletedAt IS NULL AND id = ?
 `
 
 func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
@@ -124,6 +126,7 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
 		&i.Email,
 		&i.HashPassword,
 		&i.Salt,
+		&i.Active,
 		&i.Createdat,
 		&i.Updatedat,
 		&i.Deletedat,
@@ -132,7 +135,7 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
 }
 
 const getUsersPaging = `-- name: GetUsersPaging :many
-SELECT id, guid, siteid, email, hash_password, salt, createdat, updatedat, deletedat FROM users WHERE deletedAt IS NULL AND siteId = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?
+SELECT id, guid, siteid, email, hash_password, salt, active, createdat, updatedat, deletedat FROM users WHERE deletedAt IS NULL AND siteId = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?
 `
 
 type GetUsersPagingParams struct {
@@ -157,6 +160,7 @@ func (q *Queries) GetUsersPaging(ctx context.Context, arg GetUsersPagingParams) 
 			&i.Email,
 			&i.HashPassword,
 			&i.Salt,
+			&i.Active,
 			&i.Createdat,
 			&i.Updatedat,
 			&i.Deletedat,
@@ -175,25 +179,32 @@ func (q *Queries) GetUsersPaging(ctx context.Context, arg GetUsersPagingParams) 
 }
 
 const updateUserByGuid = `-- name: UpdateUserByGuid :exec
-UPDATE users SET siteId = ?, email = ?, hash_password = ?, salt = ?, updatedAt = ? WHERE guid = ?
+UPDATE users
+SET
+    email = COALESCE(?, email),
+    hash_password = COALESCE(?, hash_password),
+    salt = COALESCE(?, salt),
+    active = COALESCE(?, active),
+    updatedAt = ?
+WHERE guid = ?
 `
 
 type UpdateUserByGuidParams struct {
-	Siteid       string
-	Email        string
-	HashPassword string
-	Salt         string
-	Updatedat    sql.NullInt64
+	Email        sql.NullString
+	HashPassword sql.NullString
+	Salt         sql.NullString
+	Active       sql.NullBool
+	UpdatedAt    sql.NullInt64
 	Guid         string
 }
 
 func (q *Queries) UpdateUserByGuid(ctx context.Context, arg UpdateUserByGuidParams) error {
 	_, err := q.db.ExecContext(ctx, updateUserByGuid,
-		arg.Siteid,
 		arg.Email,
 		arg.HashPassword,
 		arg.Salt,
-		arg.Updatedat,
+		arg.Active,
+		arg.UpdatedAt,
 		arg.Guid,
 	)
 	return err

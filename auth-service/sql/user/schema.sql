@@ -5,6 +5,7 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL,    
     hash_password VARCHAR(255) NOT NULL,         
     salt VARCHAR(255) NOT NULL,         
+    active BOOLEAN DEFAULT false,
     createdAt BIGINT NOT NULL,          
     updatedAt BIGINT DEFAULT NULL,      
     deletedAt BIGINT DEFAULT NULL,      
