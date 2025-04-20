@@ -14,7 +14,7 @@ FROM debian:bookworm-slim
 WORKDIR /app
 
 COPY --from=builder /app/main .
-COPY --from=builder /app/migration ./migration
+# COPY --from=builder /app/migration ./migration
 
 ENV GROUP_ID_EVENTBUS=sender
 ENV BROKERS_EVENTBUS=kafka:9092
