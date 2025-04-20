@@ -16,13 +16,12 @@ import (
 	"github.com/ngochuyk812/building_block/pkg/config"
 )
 
-var (
-	brokers = os.Getenv("BROKERS_EVENTBUS")
-	topic   = os.Getenv("TOPIC_EVENTBUS")
-	group   = os.Getenv("GROUP_ID_EVENTBUS")
-)
-
 func main() {
+	var (
+		brokers = os.Getenv("BROKERS_EVENTBUS")
+		topic   = os.Getenv("TOPIC_EVENTBUS")
+		group   = os.Getenv("GROUP_ID_EVENTBUS")
+	)
 	policiesPath := &map[string][]string{}
 	config := config.NewConfigEnv()
 	config.PoliciesPath = policiesPath
