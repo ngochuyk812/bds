@@ -2,21 +2,19 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'auth-service'
+        SERVICE = 'auth-service'
     }
 
     stages {
         stage('Build') {
             steps {
-                sh 'cd auth-service'
-                sh 'docker compose build'
+                sh 'docker compose -f ${SERVICE}/docker-compose.yml build'
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'cd auth-service'
-                sh 'docker compose up -d'
+                sh 'docker compose ${SERVICE}/docker-compose.yml up -d'
             }
         }
     }
