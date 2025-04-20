@@ -9,7 +9,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'cd auth-service'
-                sh 'docker-compose build'
+                sh 'docker compose build'
             }
         }
 
