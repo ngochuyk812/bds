@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = 'auth-service'
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                sh 'docker-compose build'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'docker-compose up -d'
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo "Build failed"
+        }
+        success {
+            echo "App is running!"
+        }
+    }
+}
