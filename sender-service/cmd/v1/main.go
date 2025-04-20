@@ -2,7 +2,7 @@ package main
 
 import (
 	"os"
-	"sender_service/internal/app/events"
+	events "sender_service/internal/app/event_handlers"
 	"sender_service/internal/infra"
 	"sender_service/internal/infra/bus"
 
