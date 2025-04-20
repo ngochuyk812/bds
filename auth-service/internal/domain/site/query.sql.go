@@ -109,38 +109,16 @@ func (q *Queries) GetSiteById(ctx context.Context, id int32) (Site, error) {
 }
 
 const getSitesPaging = `-- name: GetSitesPaging :many
-SELECT id, guid, siteid, name, createdat, updatedat, deletedat FROM sites
-WHERE deletedAt IS NULL
-  AND (? IS NULL OR name ILIKE '%' || ? || '%')
-  AND (? IS NULL OR siteId = ?)
-  AND (? IS NULL OR createdAt >= ?)
-  AND (? IS NULL OR createdAt <= ?)
-ORDER BY createdAt DESC
-LIMIT ? OFFSET ?
+SELECT id, guid, siteid, name, createdat, updatedat, deletedat FROM sites WHERE deletedAt IS NULL ORDER BY createdAt DESC LIMIT ? OFFSET ?
 `
 
 type GetSitesPagingParams struct {
-	Name          interface{}
-	SiteId        sql.NullString
-	CreatedAtFrom sql.NullInt64
-	CreatedAtTo   sql.NullInt64
-	Limit         int32
-	Offset        int32
+	Limit  int32
+	Offset int32
 }
 
 func (q *Queries) GetSitesPaging(ctx context.Context, arg GetSitesPagingParams) ([]Site, error) {
-	rows, err := q.db.QueryContext(ctx, getSitesPaging,
-		arg.Name,
-		arg.Name,
-		arg.SiteId,
-		arg.SiteId,
-		arg.CreatedAtFrom,
-		arg.CreatedAtFrom,
-		arg.CreatedAtTo,
-		arg.CreatedAtTo,
-		arg.Limit,
-		arg.Offset,
-	)
+	rows, err := q.db.QueryContext(ctx, getSitesPaging, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
