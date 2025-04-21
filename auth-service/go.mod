@@ -11,7 +11,7 @@ require (
 
 require (
 	github.com/Microsoft/go-winio v0.6.2
-	github.com/ngochuyk812/building_block v0.1.18
+	github.com/ngochuyk812/building_block v0.1.19
 )
 
 require (
