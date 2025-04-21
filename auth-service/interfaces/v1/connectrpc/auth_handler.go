@@ -60,3 +60,21 @@ func (s *authServerHandler) VerifySignUp(ctx context.Context, req *connect.Reque
 	res.Msg.Status = result.StatusMessage
 	return res, err
 }
+
+// RefreshToken implements authv1connect.AuthServiceHandler.
+func (s *authServerHandler) RefreshToken(ctx context.Context, req *connect.Request[authv1.RefreshTokenRequest]) (*connect.Response[authv1.RefreshTokenResponse], error) {
+	res := connect.NewResponse(&authv1.RefreshTokenResponse{
+		Status: &statusmsg.StatusMessage{},
+	})
+	result, err := bus_core.Send[commands_auth.RefreshTokenCommand, commands_auth.RefreshTokenCommandResponse](s.cabin.GetInfra().GetMediator(), ctx, commands_auth.RefreshTokenCommand{
+		RefreshToken: req.Msg.GetRefreshToken(),
+	})
+	if err != nil {
+		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+		return res, err
+	}
+	res.Msg.AccessToken = result.AccessToken
+	res.Msg.RefreshToken = result.RefreshToken
+	res.Msg.Status = result.StatusMessage
+	return res, err
+}

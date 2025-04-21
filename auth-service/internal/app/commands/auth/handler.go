@@ -37,17 +37,17 @@ func (h *LoginHandler) Handle(ctx context.Context, cmd LoginCommand) (LoginComma
 		return res, err
 	}
 	if exist == nil {
-		// res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_EXIST
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_EXIST
 		return res, nil
 	}
 	if exist.Active.Bool == false {
-		// res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_ACTIVE
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_ACTIVE
 		return res, nil
 	}
 	verify := pkg.VerifyHashPassword(cmd.Password, exist.HashPassword, exist.Salt)
 
 	if verify == false {
-		// res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_INCORRECT_PASSWORD
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_INCORRECT_PASSWORD
 		return res, nil
 	}
 	token, err := auth_context.GenerateJWT(&auth_context.ClaimModel{
@@ -100,7 +100,7 @@ func (h *SignUpCommandHandler) Handle(ctx context.Context, cmd SignUpCommand) (S
 		return res, err
 	}
 	if exist != nil {
-		// res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_EXIST
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_EXIST
 		return res, nil
 	}
 	hash, salt, err := pkg.GenerateHashPassword(cmd.Password)
@@ -158,11 +158,11 @@ func (h *VerifySignUpCommandHandler) Handle(ctx context.Context, cmd VerifySignU
 		return res, err
 	}
 	if exist == nil {
-		// res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_EXIST
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_EXIST
 		return res, nil
 	}
 	if exist.Active.Bool {
-		// res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_IS_ACTIVE
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_IS_ACTIVE
 		return res, nil
 	}
 	var otp string
@@ -172,7 +172,7 @@ func (h *VerifySignUpCommandHandler) Handle(ctx context.Context, cmd VerifySignU
 		return res, nil
 	}
 	if otp != cmd.Otp {
-		// res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_INCORRECT_OTP
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_INCORRECT_OTP
 		return res, nil
 	}
 	err = h.Cabin.GetUnitOfWork().GetUserRepository().UpdateUser(
@@ -203,7 +203,7 @@ func (h *RefreshTokenCommandHandler) Handle(ctx context.Context, cmd RefreshToke
 	claims, err := auth_context.VerifyJWT(cmd.RefreshToken, h.Cabin.GetInfra().GetConfig().SecretKey+"_REFRESH_TOKEN")
 
 	if err != nil {
-		//res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_REFRESH_TOKEN_INVALID
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_REFRESH_TOKEN_INVALID
 		return res, err
 	}
 	exist, err := h.Cabin.GetUnitOfWork().GetUserRepository().GetUserByGuid(ctx, claims.IdAuthUser)
@@ -212,11 +212,11 @@ func (h *RefreshTokenCommandHandler) Handle(ctx context.Context, cmd RefreshToke
 		return res, err
 	}
 	if exist == nil {
-		// res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_EXIST
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_EXIST
 		return res, nil
 	}
 	if exist.Active.Bool == false {
-		// res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_ACTIVE
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_ACTIVE
 		return res, nil
 	}
 	token, err := auth_context.GenerateJWT(&auth_context.ClaimModel{
