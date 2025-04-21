@@ -3,17 +3,13 @@ package connectrpc
 import (
 	commands_site "auth_service/internal/app/commands/site"
 	queries_site "auth_service/internal/app/queries/site"
-	"auth_service/internal/infra"
 	"context"
 	"math"
-	"net/http"
 
 	"connectrpc.com/connect"
-	"github.com/ngochuyk812/building_block/interceptors"
 	"github.com/ngochuyk812/building_block/pkg/dtos"
 	bus_core "github.com/ngochuyk812/building_block/pkg/mediator/bus"
 	authv1 "github.com/ngochuyk812/proto-bds/gen/auth/v1"
-	"github.com/ngochuyk812/proto-bds/gen/auth/v1/authv1connect"
 	"github.com/ngochuyk812/proto-bds/gen/statusmsg/v1"
 	utilsv1 "github.com/ngochuyk812/proto-bds/gen/utils/v1"
 )
@@ -91,18 +87,4 @@ func (s *authServerHandler) UpdateSite(ctx context.Context, req *connect.Request
 	}
 	res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
 	return res, nil
-}
-
-func NewAuthServer(cabin infra.Cabin) (pattern string, handler http.Handler) {
-	impl := &authServerHandler{
-		cabin: cabin,
-	}
-	path, handler := authv1connect.NewAuthServiceHandler(impl,
-		connect.WithInterceptors(
-			interceptors.NewAuthInterceptor(cabin.GetInfra().GetConfig().SecretKey, cabin.GetInfra().GetConfig().PoliciesPath),
-			interceptors.NewLoggingInterceptor(cabin.GetInfra().GetLogger()),
-		),
-		connect.WithIdempotency(connect.IdempotencyIdempotent),
-	)
-	return path, handler
 }

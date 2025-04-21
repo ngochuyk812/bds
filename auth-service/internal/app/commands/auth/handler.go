@@ -28,7 +28,9 @@ type LoginHandler struct {
 var _ bus_core.IHandler[LoginCommand, LoginCommandResponse] = (*LoginHandler)(nil)
 
 func (h *LoginHandler) Handle(ctx context.Context, cmd LoginCommand) (LoginCommandResponse, error) {
-	res := LoginCommandResponse{}
+	res := LoginCommandResponse{
+		StatusMessage: &statusmsg.StatusMessage{},
+	}
 	exist, err := h.Cabin.GetUnitOfWork().GetUserRepository().GetUserByEmail(ctx, usercase.GetUserByEmailUsecase{
 		Email: cmd.Email,
 	})
@@ -89,7 +91,9 @@ type SignUpCommandHandler struct {
 var _ bus_core.IHandler[SignUpCommand, SignUpCommandResponse] = (*SignUpCommandHandler)(nil)
 
 func (h *SignUpCommandHandler) Handle(ctx context.Context, cmd SignUpCommand) (SignUpCommandResponse, error) {
-	res := SignUpCommandResponse{}
+	res := SignUpCommandResponse{
+		StatusMessage: &statusmsg.StatusMessage{},
+	}
 	cache := h.Cabin.GetInfra().GetCache()
 
 	exist, err := h.Cabin.GetUnitOfWork().GetUserRepository().GetUserByEmail(ctx, usercase.GetUserByEmailUsecase{
@@ -148,7 +152,9 @@ type VerifySignUpCommandHandler struct {
 var _ bus_core.IHandler[VerifySignUpCommand, VerifySignUpCommandResponse] = (*VerifySignUpCommandHandler)(nil)
 
 func (h *VerifySignUpCommandHandler) Handle(ctx context.Context, cmd VerifySignUpCommand) (VerifySignUpCommandResponse, error) {
-	res := VerifySignUpCommandResponse{}
+	res := VerifySignUpCommandResponse{
+		StatusMessage: &statusmsg.StatusMessage{},
+	}
 	cache := h.Cabin.GetInfra().GetCache()
 	exist, err := h.Cabin.GetUnitOfWork().GetUserRepository().GetUserByEmail(ctx, usercase.GetUserByEmailUsecase{
 		Email: cmd.Email,
@@ -197,7 +203,9 @@ type RefreshTokenCommandHandler struct {
 var _ bus_core.IHandler[RefreshTokenCommand, RefreshTokenCommandResponse] = (*RefreshTokenCommandHandler)(nil)
 
 func (h *RefreshTokenCommandHandler) Handle(ctx context.Context, cmd RefreshTokenCommand) (RefreshTokenCommandResponse, error) {
-	res := RefreshTokenCommandResponse{}
+	res := RefreshTokenCommandResponse{
+		StatusMessage: &statusmsg.StatusMessage{},
+	}
 	cache := h.Cabin.GetInfra().GetCache()
 
 	claims, err := auth_context.VerifyJWT(cmd.RefreshToken, h.Cabin.GetInfra().GetConfig().SecretKey+"_REFRESH_TOKEN")

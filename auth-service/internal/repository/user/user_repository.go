@@ -69,12 +69,17 @@ func (u *userRepository) GetUserByEmail(ctx context.Context, arg usercase.GetUse
 		Email:  arg.Email,
 		Siteid: authContext.IdSite,
 	})
-
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 	return &rs, err
 }
 
 func (u *userRepository) GetUserByGuid(ctx context.Context, arg string) (*user.User, error) {
 	rs, err := u.readQueries.GetUserByGuid(ctx, arg)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 	return &rs, err
 }
 func NewUserRepository(readDB, writeDB *sql.DB, tx *sql.Tx) UserRepository {
