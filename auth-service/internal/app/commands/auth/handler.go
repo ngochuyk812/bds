@@ -58,7 +58,7 @@ func (h *LoginHandler) Handle(ctx context.Context, cmd LoginCommand) (LoginComma
 		Roles:      []string{"user"},
 		UserName:   exist.Email,
 		Email:      exist.Email,
-	}, h.Cabin.GetInfra().GetConfig().SecretKey, 30*time.Millisecond)
+	}, h.Cabin.GetInfra().GetConfig().SecretKey, 1*time.Hour)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
