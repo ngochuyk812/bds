@@ -35,7 +35,7 @@ func main() {
 	unf := repository.NewUnitOfWork(infa.GetDatabase().GetWriteDB(), infa.GetDatabase().GetReadDB())
 	cabin := infra.NewCabin(infa, unf)
 	bus.InjectBus(cabin)
-	// infa.InjectEventbus(brokers, topic)
+	infa.InjectEventbus(brokers, topic)
 
 	app := infrastructurecore.NewServe(":"+config.Port, infa.GetLogger())
 	path, handler := connectrpc.NewAuthServer(cabin)
