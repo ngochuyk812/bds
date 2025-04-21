@@ -17,7 +17,8 @@ import (
 )
 
 const (
-	KEY_CACHE_OTP_SIGNUP = "KEY_CACHE_OTP_SIGNUP"
+	KEY_CACHE_OTP_SIGNUP    = "KEY_CACHE_OTP_SIGNUP"
+	KEY_CACHE_REFRESH_TOKEN = "REFRESH_TOKEN"
 )
 
 type LoginHandler struct {
@@ -60,8 +61,24 @@ func (h *LoginHandler) Handle(ctx context.Context, cmd LoginCommand) (LoginComma
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
+	ttlRefreshToken := 30 * 24 * time.Hour
+	refreshToken, err := auth_context.GenerateJWT(&auth_context.ClaimModel{
+		IdSite:     exist.Siteid,
+		IdAuthUser: exist.Guid,
+	}, h.Cabin.GetInfra().GetConfig().SecretKey+"_REFRESH_TOKEN", ttlRefreshToken)
 
+	if err != nil {
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+		return res, err
+	}
+	cache := h.Cabin.GetInfra().GetCache()
+	err = cache.Set(ctx, cache.WithPrefix(KEY_CACHE_REFRESH_TOKEN, exist.Guid), refreshToken, ttlRefreshToken)
+	if err != nil {
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+		return res, err
+	}
 	res.AccessToken = token
+	res.RefreshToken = refreshToken
 	return res, nil
 }
 
@@ -169,6 +186,67 @@ func (h *VerifySignUpCommandHandler) Handle(ctx context.Context, cmd VerifySignU
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, nil
 	}
+	res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
+	return res, nil
+}
+
+type RefreshTokenCommandHandler struct {
+	Cabin infra.Cabin
+}
+
+var _ bus_core.IHandler[RefreshTokenCommand, RefreshTokenCommandResponse] = (*RefreshTokenCommandHandler)(nil)
+
+func (h *RefreshTokenCommandHandler) Handle(ctx context.Context, cmd RefreshTokenCommand) (RefreshTokenCommandResponse, error) {
+	res := RefreshTokenCommandResponse{}
+	cache := h.Cabin.GetInfra().GetCache()
+
+	claims, err := auth_context.VerifyJWT(cmd.RefreshToken, h.Cabin.GetInfra().GetConfig().SecretKey+"_REFRESH_TOKEN")
+
+	if err != nil {
+		//res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_REFRESH_TOKEN_INVALID
+		return res, err
+	}
+	exist, err := h.Cabin.GetUnitOfWork().GetUserRepository().GetUserByGuid(ctx, claims.IdAuthUser)
+	if err != nil {
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+		return res, err
+	}
+	if exist == nil {
+		// res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_EXIST
+		return res, nil
+	}
+	if exist.Active.Bool == false {
+		// res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_ACTIVE
+		return res, nil
+	}
+	token, err := auth_context.GenerateJWT(&auth_context.ClaimModel{
+		IdSite:     exist.Siteid,
+		IdAuthUser: exist.Guid,
+		Roles:      []string{"user"},
+		UserName:   exist.Email,
+		Email:      exist.Email,
+	}, h.Cabin.GetInfra().GetConfig().SecretKey, 30*time.Millisecond)
+	if err != nil {
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+		return res, err
+	}
+	ttlRefreshToken := 30 * 24 * time.Hour
+	refreshToken, err := auth_context.GenerateJWT(&auth_context.ClaimModel{
+		IdSite:     exist.Siteid,
+		IdAuthUser: exist.Guid,
+	}, h.Cabin.GetInfra().GetConfig().SecretKey+"_REFRESH_TOKEN", ttlRefreshToken)
+
+	if err != nil {
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+		return res, err
+	}
+	err = cache.Set(ctx, cache.WithPrefix(KEY_CACHE_REFRESH_TOKEN, exist.Guid), refreshToken, ttlRefreshToken)
+	if err != nil {
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+		return res, err
+	}
+	res.RefreshToken = refreshToken
+	res.AccessToken = token
 	res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
 	return res, nil
 }

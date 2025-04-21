@@ -32,4 +32,7 @@ func InjectBus(c infra.Cabin) {
 	bus_core.RegisterHandler(mediator, commands_auth.VerifySignUpCommand{}, &commands_auth.VerifySignUpCommandHandler{
 		Cabin: c,
 	})
+	bus_core.RegisterHandler(mediator, commands_auth.RefreshTokenCommand{}, &commands_auth.RefreshTokenCommandHandler{
+		Cabin: c,
+	})
 }

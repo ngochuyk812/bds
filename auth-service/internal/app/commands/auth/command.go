@@ -31,3 +31,12 @@ type VerifySignUpCommand struct {
 type VerifySignUpCommandResponse struct {
 	*v1.StatusMessage
 }
+
+type RefreshTokenCommand struct {
+	RefreshToken string
+}
+type RefreshTokenCommandResponse struct {
+	AccessToken  string
+	RefreshToken string
+	*v1.StatusMessage
+}

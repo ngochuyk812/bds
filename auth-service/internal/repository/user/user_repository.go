@@ -13,6 +13,7 @@ import (
 
 type UserRepository interface {
 	GetUserByEmail(ctx context.Context, arg usercase.GetUserByEmailUsecase) (*user.User, error)
+	GetUserByGuid(ctx context.Context, arg string) (*user.User, error)
 	CreateUser(ctx context.Context, arg *usercase.CreateUserUsercase) error
 	UpdateUser(ctx context.Context, arg *usercase.UpdateUserUsercase) error
 }
@@ -72,6 +73,10 @@ func (u *userRepository) GetUserByEmail(ctx context.Context, arg usercase.GetUse
 	return &rs, err
 }
 
+func (u *userRepository) GetUserByGuid(ctx context.Context, arg string) (*user.User, error) {
+	rs, err := u.readQueries.GetUserByGuid(ctx, arg)
+	return &rs, err
+}
 func NewUserRepository(readDB, writeDB *sql.DB, tx *sql.Tx) UserRepository {
 
 	if tx != nil {
