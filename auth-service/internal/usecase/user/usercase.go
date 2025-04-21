@@ -7,9 +7,11 @@ type GetUserByEmailUsecase struct {
 }
 
 type UpdateUserUsercase struct {
-	Guid   string
-	Email  string
-	Active bool
+	Guid         string
+	Email        string
+	Active       bool
+	HashPassword string
+	Salt         string
 }
 
 type CreateUserUsercase struct {

@@ -56,6 +56,8 @@ func (u *userRepository) UpdateUser(ctx context.Context, arg *usercase.UpdateUse
 			Bool:  arg.Active,
 			Valid: true,
 		},
+		HashPassword: sql.NullString{String: arg.HashPassword, Valid: len(arg.HashPassword) > 0},
+		Salt:         sql.NullString{String: arg.Salt, Valid: len(arg.Salt) > 0},
 	})
 
 	return err

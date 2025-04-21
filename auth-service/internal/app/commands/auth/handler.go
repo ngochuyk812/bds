@@ -81,6 +81,7 @@ func (h *LoginHandler) Handle(ctx context.Context, cmd LoginCommand) (LoginComma
 	}
 	res.AccessToken = token
 	res.RefreshToken = refreshToken
+	res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
 	return res, nil
 }
 
@@ -103,7 +104,7 @@ func (h *SignUpCommandHandler) Handle(ctx context.Context, cmd SignUpCommand) (S
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
-	if exist != nil {
+	if exist != nil && exist.Active.Bool == true {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_EXIST
 		return res, nil
 	}
@@ -117,12 +118,20 @@ func (h *SignUpCommandHandler) Handle(ctx context.Context, cmd SignUpCommand) (S
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
-	err = h.Cabin.GetUnitOfWork().GetUserRepository().CreateUser(ctx, &usercase.CreateUserUsercase{
-		Guid:         guid.String(),
-		Email:        cmd.Email,
-		HashPassword: hash,
-		Salt:         salt,
-	})
+	if exist != nil {
+		err = h.Cabin.GetUnitOfWork().GetUserRepository().UpdateUser(ctx, &usercase.UpdateUserUsercase{
+			HashPassword: hash,
+			Salt:         salt,
+		})
+	} else {
+		err = h.Cabin.GetUnitOfWork().GetUserRepository().CreateUser(ctx, &usercase.CreateUserUsercase{
+			Guid:         guid.String(),
+			Email:        cmd.Email,
+			HashPassword: hash,
+			Salt:         salt,
+		})
+	}
+
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
