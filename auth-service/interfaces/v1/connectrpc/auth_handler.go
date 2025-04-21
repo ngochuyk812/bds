@@ -24,6 +24,7 @@ func (s *authServerHandler) Login(ctx context.Context, req *connect.Request[auth
 	}
 	res.Msg.AccessToken = result.AccessToken
 	res.Msg.RefreshToken = result.RefreshToken
+	res.Msg.Status = result.StatusMessage
 	return res, err
 }
 

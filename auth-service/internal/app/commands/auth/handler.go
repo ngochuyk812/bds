@@ -122,6 +122,7 @@ func (h *SignUpCommandHandler) Handle(ctx context.Context, cmd SignUpCommand) (S
 		err = h.Cabin.GetUnitOfWork().GetUserRepository().UpdateUser(ctx, &usercase.UpdateUserUsercase{
 			HashPassword: hash,
 			Salt:         salt,
+			Guid:         exist.Guid,
 		})
 	} else {
 		err = h.Cabin.GetUnitOfWork().GetUserRepository().CreateUser(ctx, &usercase.CreateUserUsercase{
