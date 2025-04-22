@@ -6,11 +6,13 @@ import (
 	usercase "auth_service/internal/usecase/user"
 	"auth_service/pkg"
 	"context"
+	"errors"
 	"fmt"
 	"math/rand"
 	"time"
 
 	"github.com/Microsoft/go-winio/pkg/guid"
+	"github.com/ngochuyk812/building_block/infrastructure/helpers"
 	auth_context "github.com/ngochuyk812/building_block/pkg/auth"
 	bus_core "github.com/ngochuyk812/building_block/pkg/mediator/bus"
 	"github.com/ngochuyk812/proto-bds/gen/statusmsg/v1"
@@ -265,6 +267,34 @@ func (h *RefreshTokenCommandHandler) Handle(ctx context.Context, cmd RefreshToke
 	}
 	res.RefreshToken = refreshToken
 	res.AccessToken = token
+	res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
+	return res, nil
+}
+
+type LogoutHandler struct {
+	Cabin infra.Cabin
+}
+
+var _ bus_core.IHandler[LogoutCommand, LogoutCommandResponse] = (*LogoutHandler)(nil)
+
+func (h *LogoutHandler) Handle(ctx context.Context, cmd LogoutCommand) (LogoutCommandResponse, error) {
+	res := LogoutCommandResponse{
+		StatusMessage: &statusmsg.StatusMessage{},
+	}
+
+	authContext, ok := helpers.AuthContext(ctx)
+	if !ok {
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+		return res, errors.New("cannot get auth context")
+	}
+
+	cache := h.Cabin.GetInfra().GetCache()
+	err := cache.Del(ctx, cache.WithPrefix(KEY_CACHE_REFRESH_TOKEN, authContext.IdAuthUser))
+	if err != nil {
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+		return res, err
+	}
+
 	res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
 	return res, nil
 }

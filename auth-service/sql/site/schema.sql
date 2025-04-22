@@ -9,3 +9,4 @@ CREATE TABLE sites (
     UNIQUE KEY unique_guid (guid),      
     UNIQUE KEY unique_siteId (siteId)  
 );
+

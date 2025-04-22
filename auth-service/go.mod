@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	connectrpc.com/connect v1.18.1
-	github.com/ngochuyk812/proto-bds v1.0.12
+	github.com/ngochuyk812/proto-bds v1.1.15
 	go.uber.org/zap v1.27.0 // indirect
 
 )

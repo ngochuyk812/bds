@@ -14,3 +14,10 @@ sql:
       go:
         package: "user"
         out: "internal/domain/user"
+  - engine: "mysql"
+    queries: "sql/user_detail/query.sql"
+    schema: "sql/user_detail/schema.sql"
+    gen:
+      go:
+        package: "user_detail"
+        out: "internal/domain/user_detail"

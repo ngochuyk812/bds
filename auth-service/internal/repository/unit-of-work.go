@@ -3,6 +3,7 @@ package repository
 import (
 	repositorysite "auth_service/internal/repository/site"
 	repositoryuser "auth_service/internal/repository/user"
+	repositoryuserdetail "auth_service/internal/repository/user-detail"
 	"context"
 	"database/sql"
 	"fmt"
@@ -30,6 +31,7 @@ func newTxUnitOfWork(writeDB *sql.DB, readerDB *sql.DB, tx *sql.Tx) UnitOfWork {
 type UnitOfWork interface {
 	GetSiteRepository() repositorysite.SiteRepository
 	GetUserRepository() repositoryuser.UserRepository
+	GetUserDetailRepository() repositoryuserdetail.UserDetailRepository
 
 	ExecTx(ctx context.Context, fn func(uow UnitOfWork) error) error
 }
@@ -66,6 +68,16 @@ func (u *unitOfWork) GetUserRepository() repositoryuser.UserRepository {
 		return repo.(repositoryuser.UserRepository)
 	}
 	repo := repositoryuser.NewUserRepository(u.writeDB, u.readerDB, u.tx)
+	u.repos[key] = repo
+	return repo
+}
+
+func (u *unitOfWork) GetUserDetailRepository() repositoryuserdetail.UserDetailRepository {
+	const key = "UserDetailRepository"
+	if repo, ok := u.repos[key]; ok {
+		return repo.(repositoryuserdetail.UserDetailRepository)
+	}
+	repo := repositoryuserdetail.NewUserDetailRepository(u.writeDB, u.readerDB, u.tx)
 	u.repos[key] = repo
 	return repo
 }

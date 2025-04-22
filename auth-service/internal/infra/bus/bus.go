@@ -3,6 +3,7 @@ package bus
 import (
 	commands_auth "auth_service/internal/app/commands/auth"
 	commands_site "auth_service/internal/app/commands/site"
+	commands_user "auth_service/internal/app/commands/user"
 	queries_site "auth_service/internal/app/queries/site"
 	"auth_service/internal/infra"
 
@@ -33,6 +34,15 @@ func InjectBus(c infra.Cabin) {
 		Cabin: c,
 	})
 	bus_core.RegisterHandler(mediator, commands_auth.RefreshTokenCommand{}, &commands_auth.RefreshTokenCommandHandler{
+		Cabin: c,
+	})
+	bus_core.RegisterHandler(mediator, commands_user.UpdateProfileCommand{}, &commands_user.UpdateProfileHandler{
+		Cabin: c,
+	})
+	bus_core.RegisterHandler(mediator, commands_user.GetProfileCommand{}, &commands_user.GetProfileHandler{
+		Cabin: c,
+	})
+	bus_core.RegisterHandler(mediator, commands_auth.LogoutCommand{}, &commands_auth.LogoutHandler{
 		Cabin: c,
 	})
 }

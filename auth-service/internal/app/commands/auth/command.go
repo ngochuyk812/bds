@@ -40,3 +40,9 @@ type RefreshTokenCommandResponse struct {
 	RefreshToken string
 	*v1.StatusMessage
 }
+
+type LogoutCommand struct{}
+
+type LogoutCommandResponse struct {
+	*v1.StatusMessage
+}
