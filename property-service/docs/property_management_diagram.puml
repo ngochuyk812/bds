@@ -1,0 +1,123 @@
+@startuml Property Management System
+
+class Property {
+  +int id
+  +string name
+  +string address
+  +string description
+  +float latitude
+  +float longitude
+  +string owner_id
+  +int property_type_id
+  +datetime created_at
+  +datetime updated_at
+  +bool is_active
+}
+
+class PropertyType {
+  +int id
+  +string name
+  +string description
+  +datetime created_at
+  +datetime updated_at
+}
+
+class Room {
+  +int id
+  +string name
+  +string description
+  +float area
+  +float price
+  +int property_id
+  +int room_type_id
+  +int status_id
+  +datetime created_at
+  +datetime updated_at
+}
+
+class RoomType {
+  +int id
+  +string name
+  +string description
+  +datetime created_at
+  +datetime updated_at
+}
+
+class RoomStatus {
+  +int id
+  +string name
+  +string description
+  +datetime created_at
+  +datetime updated_at
+}
+
+class Amenity {
+  +int id
+  +string name
+  +string description
+  +string icon
+  +datetime created_at
+  +datetime updated_at
+}
+
+class Media {
+  +int id
+  +string data
+  +string description
+  +bool is_primary
+  +string type
+  +datetime created_at
+  +datetime updated_at
+}
+
+class RoomMedia {
+  +int id
+  +int room_id
+  +string media_id
+  +datetime created_at
+  +datetime updated_at
+}
+
+class Category {
+  +int id
+  +string name
+  +string icon
+  +string description
+  +int parent_id
+  +datetime created_at
+  +datetime updated_at
+
+}
+
+class RoomAmenity {
+  +int room_id
+  +int amenity_id
+}
+
+class RoomCategory {
+  +int room_id
+  +int category_id
+}
+
+Property "1" -- "many" Room : contains >
+Property "many" -- "1" PropertyType : is of >
+
+Room "many" -- "1" RoomType : is of >
+Room "many" -- "1" RoomStatus : has >
+Room "1" -- "many" RoomImage : has >
+
+Room "many" -- "many" Amenity : has
+RoomAmenity -- Room
+RoomAmenity -- Amenity
+
+Room "many" -- "many" Category : belongs to
+RoomCategory -- Room
+RoomCategory -- Category
+
+Category "many" -- "0..1" Category : has parent >
+
+Room "many" -- "many" Media : has
+RoomMedia -- Room
+RoomMedia -- Media
+
+@enduml
