@@ -3,7 +3,7 @@ package repository
 import (
 	repositorysite "auth_service/internal/repository/site"
 	repositoryuser "auth_service/internal/repository/user"
-	repositoryuserdetail "auth_service/internal/repository/user-detail"
+	repositoryuserdetail "auth_service/internal/repository/user_detail"
 	"context"
 	"database/sql"
 	"fmt"

@@ -1,10 +1,12 @@
 package commands_user
 
 import (
+	"auth_service/internal/entity"
 	"auth_service/internal/infra"
-	usercase "auth_service/internal/usecase/user"
 	"context"
+	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/ngochuyk812/building_block/infrastructure/helpers"
 	bus_core "github.com/ngochuyk812/building_block/pkg/mediator/bus"
@@ -36,13 +38,15 @@ func (h *UpdateProfileHandler) Handle(ctx context.Context, cmd UpdateProfileComm
 		return res, nil
 	}
 
-	err = h.Cabin.GetUnitOfWork().GetUserDetailRepository().UpdateUserDetail(ctx, &usercase.UpdateUserDetailUsecase{
+	userDetailEntity := &entity.UserDetail{
 		UserGuid:  authContext.IdAuthUser,
 		FirstName: cmd.FirstName,
 		LastName:  cmd.LastName,
 		Phone:     cmd.Phone,
 		Address:   cmd.Address,
-	})
+		Updatedat: sql.NullInt64{Int64: time.Now().Unix(), Valid: true},
+	}
+	err = h.Cabin.GetUnitOfWork().GetUserDetailRepository().UpdateUserDetail(ctx, userDetailEntity)
 
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED

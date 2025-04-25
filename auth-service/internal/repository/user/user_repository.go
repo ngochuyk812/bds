@@ -1,21 +1,20 @@
 package repositoryuser
 
 import (
-	"auth_service/internal/domain/user"
-	usercase "auth_service/internal/usecase/user"
+	"auth_service/internal/db/user"
+	"auth_service/internal/entity"
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 
 	"github.com/ngochuyk812/building_block/infrastructure/helpers"
 )
 
 type UserRepository interface {
-	GetUserByEmail(ctx context.Context, arg usercase.GetUserByEmailUsecase) (*user.User, error)
-	GetUserByGuid(ctx context.Context, arg string) (*user.User, error)
-	CreateUser(ctx context.Context, arg *usercase.CreateUserUsercase) error
-	UpdateUser(ctx context.Context, arg *usercase.UpdateUserUsercase) error
+	GetUserByEmail(ctx context.Context, email string) (*entity.User, error)
+	GetUserByGuid(ctx context.Context, guid string) (*entity.User, error)
+	CreateUser(ctx context.Context, user *entity.User) error
+	UpdateUser(ctx context.Context, user *entity.User) error
 }
 
 type userRepository struct {
@@ -23,66 +22,84 @@ type userRepository struct {
 	writeQueries *user.Queries
 }
 
-func (u *userRepository) CreateUser(ctx context.Context, arg *usercase.CreateUserUsercase) error {
+func (u *userRepository) CreateUser(ctx context.Context, userEntity *entity.User) error {
 	authContext, oke := helpers.AuthContext(ctx)
 	if !oke {
 		return errors.New("cannot get auth context")
 	}
 
 	err := u.readQueries.CreateUser(ctx, user.CreateUserParams{
-		Email:        arg.Email,
+		Email:        userEntity.Email,
 		Siteid:       authContext.IdSite,
-		Guid:         arg.Guid,
-		HashPassword: arg.HashPassword,
-		Salt:         arg.Salt,
-		Createdat:    time.Now().Unix(),
+		Guid:         userEntity.Guid,
+		HashPassword: userEntity.HashPassword,
+		Salt:         userEntity.Salt,
+		Createdat:    userEntity.Createdat,
 	})
 
 	return err
 }
 
-func (u *userRepository) UpdateUser(ctx context.Context, arg *usercase.UpdateUserUsercase) error {
+func (u *userRepository) UpdateUser(ctx context.Context, userEntity *entity.User) error {
 	err := u.readQueries.UpdateUserByGuid(ctx, user.UpdateUserByGuidParams{
 		Email: sql.NullString{
-			String: arg.Email,
-			Valid:  len(arg.Email) > 0,
+			String: userEntity.Email,
+			Valid:  len(userEntity.Email) > 0,
 		},
-		Guid: arg.Guid,
-		UpdatedAt: sql.NullInt64{
-			Int64: time.Now().Unix(),
-			Valid: true,
-		},
-		Active: sql.NullBool{
-			Bool:  arg.Active,
-			Valid: true,
-		},
-		HashPassword: sql.NullString{String: arg.HashPassword, Valid: len(arg.HashPassword) > 0},
-		Salt:         sql.NullString{String: arg.Salt, Valid: len(arg.Salt) > 0},
+		Guid:         userEntity.Guid,
+		UpdatedAt:    userEntity.Updatedat,
+		Active:       userEntity.Active,
+		HashPassword: sql.NullString{String: userEntity.HashPassword, Valid: len(userEntity.HashPassword) > 0},
+		Salt:         sql.NullString{String: userEntity.Salt, Valid: len(userEntity.Salt) > 0},
 	})
 
 	return err
 }
-func (u *userRepository) GetUserByEmail(ctx context.Context, arg usercase.GetUserByEmailUsecase) (*user.User, error) {
+func (u *userRepository) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
 	authContext, oke := helpers.AuthContext(ctx)
 	if !oke {
 		return nil, errors.New("cannot get auth context")
 	}
 	rs, err := u.readQueries.GetUserByEmail(ctx, user.GetUserByEmailParams{
-		Email:  arg.Email,
+		Email:  email,
 		Siteid: authContext.IdSite,
 	})
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
-	return &rs, err
+
+	return &entity.User{
+		ID:           rs.ID,
+		Guid:         rs.Guid,
+		Siteid:       rs.Siteid,
+		Email:        rs.Email,
+		HashPassword: rs.HashPassword,
+		Salt:         rs.Salt,
+		Active:       rs.Active,
+		Createdat:    rs.Createdat,
+		Updatedat:    rs.Updatedat,
+		Deletedat:    rs.Deletedat,
+	}, err
 }
 
-func (u *userRepository) GetUserByGuid(ctx context.Context, arg string) (*user.User, error) {
-	rs, err := u.readQueries.GetUserByGuid(ctx, arg)
+func (u *userRepository) GetUserByGuid(ctx context.Context, guid string) (*entity.User, error) {
+	rs, err := u.readQueries.GetUserByGuid(ctx, guid)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
-	return &rs, err
+
+	return &entity.User{
+		ID:           rs.ID,
+		Guid:         rs.Guid,
+		Siteid:       rs.Siteid,
+		Email:        rs.Email,
+		HashPassword: rs.HashPassword,
+		Salt:         rs.Salt,
+		Active:       rs.Active,
+		Createdat:    rs.Createdat,
+		Updatedat:    rs.Updatedat,
+		Deletedat:    rs.Deletedat,
+	}, err
 }
 func NewUserRepository(readDB, writeDB *sql.DB, tx *sql.Tx) UserRepository {
 

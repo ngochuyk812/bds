@@ -1,12 +1,12 @@
-package usercase
+package userdto
 
 import "database/sql"
 
-type GetUserByEmailUsecase struct {
+type GetUserByEmailDTO struct {
 	Email string
 }
 
-type UpdateUserUsercase struct {
+type UpdateUserDTO struct {
 	Guid         string
 	Email        string
 	Active       bool
@@ -14,7 +14,7 @@ type UpdateUserUsercase struct {
 	Salt         string
 }
 
-type CreateUserUsercase struct {
+type CreateUserDTO struct {
 	Guid         string
 	Email        string
 	HashPassword string
@@ -23,7 +23,7 @@ type CreateUserUsercase struct {
 	FirstName    string
 }
 
-type UserUsercase struct {
+type UserDTO struct {
 	ID           int32
 	Guid         string
 	Siteid       string
@@ -35,7 +35,7 @@ type UserUsercase struct {
 	Deletedat    sql.NullInt64
 }
 
-type CreateUserDetailUsecase struct {
+type CreateUserDetailDTO struct {
 	UserGuid  string
 	FirstName string
 	LastName  string
@@ -44,7 +44,7 @@ type CreateUserDetailUsecase struct {
 	Address   string
 }
 
-type UpdateUserDetailUsecase struct {
+type UpdateUserDetailDTO struct {
 	UserGuid  string
 	FirstName string
 	LastName  string
@@ -53,7 +53,7 @@ type UpdateUserDetailUsecase struct {
 	Address   string
 }
 
-type UserDetail struct {
+type UserDetailDTO struct {
 	ID        int32
 	UserGuid  string
 	FirstName string

@@ -1,7 +1,8 @@
 package repositorysite
 
 import (
-	"auth_service/internal/domain/site"
+	"auth_service/internal/db/site"
+	"auth_service/internal/entity"
 	"context"
 	"database/sql"
 	"time"
@@ -12,14 +13,13 @@ import (
 )
 
 type SiteRepository interface {
-	CreateSite(ctx context.Context, arg site.CreateSiteParams) error
-	GetSiteById(ctx context.Context, id int32) (site.Site, error)
-	GetSiteByGuid(ctx context.Context, guid string) (site.Site, error)
-	UpdateSiteById(ctx context.Context, arg site.UpdateSiteByIdParams) error
-	UpdateSiteByGuid(ctx context.Context, arg site.UpdateSiteByGuidParams) error
+	CreateSite(ctx context.Context, siteEntity *entity.Site) error
+	GetSiteById(ctx context.Context, id int32) (*entity.Site, error)
+	GetSiteByGuid(ctx context.Context, guid string) (*entity.Site, error)
+	UpdateSite(ctx context.Context, siteEntity *entity.Site) error
 	DeleteSiteById(ctx context.Context, id int32) error
 	DeleteSiteByGuid(ctx context.Context, guid string) error
-	GetSitesPaging(ctx context.Context, page, size int32) (*dtos.PagingModel[site.Site], error)
+	GetSitesPaging(ctx context.Context, page, size int32) (*dtos.PagingModel[*entity.Site], error)
 }
 
 type siteRepository struct {
@@ -43,31 +43,71 @@ func NewSiteRepository(readDB, writeDB *sql.DB, tx *sql.Tx) SiteRepository {
 
 }
 
-func (r *siteRepository) CreateSite(ctx context.Context, arg site.CreateSiteParams) error {
-	arg.Createdat = time.Now().Unix()
+func (r *siteRepository) CreateSite(ctx context.Context, siteEntity *entity.Site) error {
 	guid, err := guid.NewV4()
 	if err != nil {
 		return err
 	}
-	arg.Guid = guid.String()
+	siteEntity.Guid = guid.String()
 
-	return r.writeQueries.CreateSite(ctx, arg)
+	return r.writeQueries.CreateSite(ctx, site.CreateSiteParams{
+		Guid:      siteEntity.Guid,
+		Siteid:    siteEntity.Siteid,
+		Name:      siteEntity.Name,
+		Createdat: siteEntity.Createdat,
+	})
 }
 
-func (r *siteRepository) GetSiteById(ctx context.Context, id int32) (site.Site, error) {
-	return r.readQueries.GetSiteById(ctx, id)
+func (r *siteRepository) GetSiteById(ctx context.Context, id int32) (*entity.Site, error) {
+	result, err := r.readQueries.GetSiteById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity.Site{
+		ID:        result.ID,
+		Guid:      result.Guid,
+		Siteid:    result.Siteid,
+		Name:      result.Name,
+		Createdat: result.Createdat,
+		Updatedat: result.Updatedat,
+		Deletedat: result.Deletedat,
+	}, nil
 }
 
-func (r *siteRepository) GetSiteByGuid(ctx context.Context, guid string) (site.Site, error) {
-	return r.readQueries.GetSiteByGuid(ctx, guid)
+func (r *siteRepository) GetSiteByGuid(ctx context.Context, guid string) (*entity.Site, error) {
+	result, err := r.readQueries.GetSiteByGuid(ctx, guid)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity.Site{
+		ID:        result.ID,
+		Guid:      result.Guid,
+		Siteid:    result.Siteid,
+		Name:      result.Name,
+		Createdat: result.Createdat,
+		Updatedat: result.Updatedat,
+		Deletedat: result.Deletedat,
+	}, nil
 }
 
-func (r *siteRepository) UpdateSiteById(ctx context.Context, arg site.UpdateSiteByIdParams) error {
-	return r.writeQueries.UpdateSiteById(ctx, arg)
-}
-
-func (r *siteRepository) UpdateSiteByGuid(ctx context.Context, arg site.UpdateSiteByGuidParams) error {
-	return r.writeQueries.UpdateSiteByGuid(ctx, arg)
+func (r *siteRepository) UpdateSite(ctx context.Context, siteEntity *entity.Site) error {
+	if siteEntity.ID > 0 {
+		return r.writeQueries.UpdateSiteById(ctx, site.UpdateSiteByIdParams{
+			Siteid:    siteEntity.Siteid,
+			Name:      siteEntity.Name,
+			Updatedat: siteEntity.Updatedat,
+			ID:        siteEntity.ID,
+		})
+	} else {
+		return r.writeQueries.UpdateSiteByGuid(ctx, site.UpdateSiteByGuidParams{
+			Siteid:    siteEntity.Siteid,
+			Name:      siteEntity.Name,
+			Updatedat: siteEntity.Updatedat,
+			Guid:      siteEntity.Guid,
+		})
+	}
 }
 
 func (r *siteRepository) DeleteSiteById(ctx context.Context, id int32) error {
@@ -84,8 +124,8 @@ func (r *siteRepository) DeleteSiteByGuid(ctx context.Context, guid string) erro
 	})
 }
 
-func (r *siteRepository) GetSitesPaging(ctx context.Context, page, size int32) (*dtos.PagingModel[site.Site], error) {
-	res := &dtos.PagingModel[site.Site]{}
+func (r *siteRepository) GetSitesPaging(ctx context.Context, page, size int32) (*dtos.PagingModel[*entity.Site], error) {
+	res := &dtos.PagingModel[*entity.Site]{}
 
 	var (
 		limit  = size
@@ -99,7 +139,19 @@ func (r *siteRepository) GetSitesPaging(ctx context.Context, page, size int32) (
 			Offset: offset,
 		})
 		if err == nil {
-			res.Items = data
+			entityItems := make([]*entity.Site, len(data))
+			for i, item := range data {
+				entityItems[i] = &entity.Site{
+					ID:        item.ID,
+					Guid:      item.Guid,
+					Siteid:    item.Siteid,
+					Name:      item.Name,
+					Createdat: item.Createdat,
+					Updatedat: item.Updatedat,
+					Deletedat: item.Deletedat,
+				}
+			}
+			res.Items = entityItems
 		}
 		return err
 	})

@@ -2,10 +2,11 @@ package commands_auth
 
 import (
 	"auth_service/internal/app/eventbus/events"
+	"auth_service/internal/entity"
 	"auth_service/internal/infra"
-	usercase "auth_service/internal/usecase/user"
 	"auth_service/pkg"
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -33,9 +34,7 @@ func (h *LoginHandler) Handle(ctx context.Context, cmd LoginCommand) (LoginComma
 	res := LoginCommandResponse{
 		StatusMessage: &statusmsg.StatusMessage{},
 	}
-	exist, err := h.Cabin.GetUnitOfWork().GetUserRepository().GetUserByEmail(ctx, usercase.GetUserByEmailUsecase{
-		Email: cmd.Email,
-	})
+	exist, err := h.Cabin.GetUnitOfWork().GetUserRepository().GetUserByEmail(ctx, cmd.Email)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
@@ -99,9 +98,7 @@ func (h *SignUpCommandHandler) Handle(ctx context.Context, cmd SignUpCommand) (S
 	}
 	cache := h.Cabin.GetInfra().GetCache()
 
-	exist, err := h.Cabin.GetUnitOfWork().GetUserRepository().GetUserByEmail(ctx, usercase.GetUserByEmailUsecase{
-		Email: cmd.Email,
-	})
+	exist, err := h.Cabin.GetUnitOfWork().GetUserRepository().GetUserByEmail(ctx, cmd.Email)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
@@ -121,18 +118,24 @@ func (h *SignUpCommandHandler) Handle(ctx context.Context, cmd SignUpCommand) (S
 		return res, err
 	}
 	if exist != nil {
-		err = h.Cabin.GetUnitOfWork().GetUserRepository().UpdateUser(ctx, &usercase.UpdateUserUsercase{
+		userEntity := &entity.User{
+			Guid:         exist.Guid,
+			Email:        exist.Email,
 			HashPassword: hash,
 			Salt:         salt,
-			Guid:         exist.Guid,
-		})
+			Active:       exist.Active,
+			Updatedat:    sql.NullInt64{Int64: time.Now().Unix(), Valid: true},
+		}
+		err = h.Cabin.GetUnitOfWork().GetUserRepository().UpdateUser(ctx, userEntity)
 	} else {
-		err = h.Cabin.GetUnitOfWork().GetUserRepository().CreateUser(ctx, &usercase.CreateUserUsercase{
+		userEntity := &entity.User{
 			Guid:         guid.String(),
 			Email:        cmd.Email,
 			HashPassword: hash,
 			Salt:         salt,
-		})
+			Createdat:    time.Now().Unix(),
+		}
+		err = h.Cabin.GetUnitOfWork().GetUserRepository().CreateUser(ctx, userEntity)
 	}
 
 	if err != nil {
@@ -168,9 +171,7 @@ func (h *VerifySignUpCommandHandler) Handle(ctx context.Context, cmd VerifySignU
 		StatusMessage: &statusmsg.StatusMessage{},
 	}
 	cache := h.Cabin.GetInfra().GetCache()
-	exist, err := h.Cabin.GetUnitOfWork().GetUserRepository().GetUserByEmail(ctx, usercase.GetUserByEmailUsecase{
-		Email: cmd.Email,
-	})
+	exist, err := h.Cabin.GetUnitOfWork().GetUserRepository().GetUserByEmail(ctx, cmd.Email)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
@@ -193,13 +194,13 @@ func (h *VerifySignUpCommandHandler) Handle(ctx context.Context, cmd VerifySignU
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_INCORRECT_OTP
 		return res, nil
 	}
-	err = h.Cabin.GetUnitOfWork().GetUserRepository().UpdateUser(
-		ctx, &usercase.UpdateUserUsercase{
-			Guid:   exist.Guid,
-			Email:  exist.Email,
-			Active: true,
-		},
-	)
+	userEntity := &entity.User{
+		Guid:      exist.Guid,
+		Email:     exist.Email,
+		Active:    sql.NullBool{Bool: true, Valid: true},
+		Updatedat: sql.NullInt64{Int64: time.Now().Unix(), Valid: true},
+	}
+	err = h.Cabin.GetUnitOfWork().GetUserRepository().UpdateUser(ctx, userEntity)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, nil

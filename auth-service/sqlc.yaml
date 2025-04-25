@@ -6,18 +6,18 @@ sql:
     gen:
       go:
         package: "site"
-        out: "internal/domain/site"
+        out: "internal/db/site"
   - engine: "mysql"
     queries: "sql/user/query.sql"
     schema: "sql/user/schema.sql"
     gen:
       go:
         package: "user"
-        out: "internal/domain/user"
+        out: "internal/db/user"
   - engine: "mysql"
     queries: "sql/user_detail/query.sql"
     schema: "sql/user_detail/schema.sql"
     gen:
       go:
         package: "user_detail"
-        out: "internal/domain/user_detail"
+        out: "internal/db/user_detail"

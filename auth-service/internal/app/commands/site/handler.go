@@ -1,7 +1,7 @@
 package commands_site
 
 import (
-	"auth_service/internal/domain/site"
+	"auth_service/internal/entity"
 	"auth_service/internal/infra"
 	"auth_service/internal/repository"
 	"context"
@@ -20,10 +20,12 @@ var _ bus_core.IHandler[CreateSiteCommand, CreateSiteCommandResponse] = (*Create
 func (h *CreateSiteHandler) Handle(ctx context.Context, cmd CreateSiteCommand) (CreateSiteCommandResponse, error) {
 	res := CreateSiteCommandResponse{}
 	err := h.Cabin.GetUnitOfWork().ExecTx(ctx, func(uow repository.UnitOfWork) error {
-		err := uow.GetSiteRepository().CreateSite(ctx, site.CreateSiteParams{
-			Name:   cmd.Name,
-			Siteid: cmd.SiteId,
-		})
+		siteEntity := &entity.Site{
+			Name:      cmd.Name,
+			Siteid:    cmd.SiteId,
+			Createdat: time.Now().Unix(),
+		}
+		err := uow.GetSiteRepository().CreateSite(ctx, siteEntity)
 		return err
 	})
 
@@ -39,12 +41,13 @@ var _ bus_core.IHandler[UpdateSiteCommand, UpdateSiteCommandResponse] = (*Update
 func (h *UpdateSiteHandler) Handle(ctx context.Context, cmd UpdateSiteCommand) (UpdateSiteCommandResponse, error) {
 	res := UpdateSiteCommandResponse{}
 	err := h.Cabin.GetUnitOfWork().ExecTx(ctx, func(uow repository.UnitOfWork) error {
-		err := uow.GetSiteRepository().UpdateSiteByGuid(ctx, site.UpdateSiteByGuidParams{
+		siteEntity := &entity.Site{
+			Guid:      cmd.Guid,
 			Name:      cmd.Name,
 			Siteid:    cmd.SiteId,
-			Guid:      cmd.Guid,
-			Updatedat: sql.NullInt64{time.Now().Unix(), true},
-		})
+			Updatedat: sql.NullInt64{Int64: time.Now().Unix(), Valid: true},
+		}
+		err := uow.GetSiteRepository().UpdateSite(ctx, siteEntity)
 		return err
 	})
 	return res, err
