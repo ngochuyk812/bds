@@ -1,14 +1,10 @@
 package connectrpc
 
 import (
-	commands_site "auth_service/internal/app/commands/site"
-	queries_site "auth_service/internal/app/queries/site"
+	sitedto "auth_service/internal/dtos/site"
 	"context"
-	"math"
 
 	"connectrpc.com/connect"
-	"github.com/ngochuyk812/building_block/pkg/dtos"
-	bus_core "github.com/ngochuyk812/building_block/pkg/mediator/bus"
 	authv1 "github.com/ngochuyk812/proto-bds/gen/auth/v1"
 	"github.com/ngochuyk812/proto-bds/gen/statusmsg/v1"
 	utilsv1 "github.com/ngochuyk812/proto-bds/gen/utils/v1"
@@ -18,14 +14,17 @@ func (s *authServerHandler) CreateSite(ctx context.Context, req *connect.Request
 	res = connect.NewResponse(&authv1.CreateSiteResponse{
 		Status: &statusmsg.StatusMessage{},
 	})
-	_, err = bus_core.Send[commands_site.CreateSiteCommand, commands_site.CreateSiteCommandResponse](s.cabin.GetInfra().GetMediator(), ctx, commands_site.CreateSiteCommand{
+
+	err = s.usecaseManager.GetSiteUseCase().CreateSite(ctx, sitedto.CreateSiteCommand{
 		SiteId: req.Msg.GetSiteId(),
 		Name:   req.Msg.GetName(),
 	})
+
 	if err != nil {
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
+
 	res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
 	return res, nil
 }
@@ -34,13 +33,16 @@ func (s *authServerHandler) DeleteSite(ctx context.Context, req *connect.Request
 	res = connect.NewResponse(&authv1.DeleteSiteResponse{
 		Status: &statusmsg.StatusMessage{},
 	})
-	_, err = bus_core.Send[commands_site.DeleteSiteCommand, commands_site.DeleteSiteCommandResponse](s.cabin.GetInfra().GetMediator(), ctx, commands_site.DeleteSiteCommand{
+
+	err = s.usecaseManager.GetSiteUseCase().DeleteSite(ctx, sitedto.DeleteSiteCommand{
 		Guid: req.Msg.GetGuid(),
 	})
+
 	if err != nil {
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
+
 	res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
 	return res, nil
 }
@@ -50,23 +52,43 @@ func (s *authServerHandler) FetchSites(ctx context.Context, req *connect.Request
 		Status: &statusmsg.StatusMessage{},
 	})
 
-	paging, err := bus_core.Send[queries_site.FetchSitesQuery, dtos.PagingModel[authv1.SiteModel]](s.cabin.GetInfra().GetMediator(), ctx, queries_site.FetchSitesQuery{
-		PagingRequest: &dtos.PagingRequest{
-			PageSize: int(req.Msg.Pagination.GetPageSize()),
-			Page:     int(req.Msg.Pagination.GetPageNumber()),
-		},
+	pageSize := int32(req.Msg.Pagination.GetPageSize())
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	pageNumber := int32(req.Msg.Pagination.GetPageNumber())
+	if pageNumber <= 0 {
+		pageNumber = 1
+	}
+
+	result, err := s.usecaseManager.GetSiteUseCase().GetSitesPaging(ctx, sitedto.FetchSitesQuery{
+		Page:     pageNumber,
+		PageSize: pageSize,
 	})
+
+	if err != nil {
+		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+		return res, err
+	}
+
+	items := make([]*authv1.SiteModel, len(result.Items))
+	for i, item := range result.Items {
+		items[i] = &authv1.SiteModel{
+			Id:     item.ID,
+			Guid:   item.Guid,
+			Name:   item.Name,
+			SiteId: item.SiteId,
+		}
+	}
+
+	res.Msg.Items = items
 	res.Msg.Pagination = &utilsv1.PaginationResponse{
 		CurrentPage: req.Msg.Pagination.PageNumber,
 		PageSize:    req.Msg.Pagination.PageSize,
-		Total:       int64(paging.Total),
-		TotalPages:  int64(math.Ceil(float64(paging.Total) / float64(req.Msg.Pagination.PageSize))),
+		Total:       int64(result.Total),
+		TotalPages:  int64(result.TotalPages),
 	}
-	items := make([]*authv1.SiteModel, len(paging.Items))
-	for i := range paging.Items {
-		items[i] = &paging.Items[i]
-	}
-	res.Msg.Items = items
 
 	res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
 	return res, nil
@@ -76,15 +98,17 @@ func (s *authServerHandler) UpdateSite(ctx context.Context, req *connect.Request
 	res = connect.NewResponse(&authv1.UpdateSiteResponse{
 		Status: &statusmsg.StatusMessage{},
 	})
-	_, err = bus_core.Send[commands_site.UpdateSiteCommand, commands_site.UpdateSiteCommandResponse](s.cabin.GetInfra().GetMediator(), ctx, commands_site.UpdateSiteCommand{
-		SiteId: req.Msg.GetSiteId(),
-		Name:   req.Msg.GetName(),
-		Guid:   req.Msg.GetGuid(),
+
+	err = s.usecaseManager.GetSiteUseCase().UpdateSite(ctx, sitedto.UpdateSiteCommand{
+		Name: req.Msg.GetName(),
+		Guid: req.Msg.GetGuid(),
 	})
+
 	if err != nil {
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
+
 	res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
 	return res, nil
 }

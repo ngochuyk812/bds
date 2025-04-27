@@ -1,12 +1,10 @@
 package connectrpc
 
 import (
-	commands_auth "auth_service/internal/app/commands/auth"
-	commands_user "auth_service/internal/app/commands/user"
+	userdto "auth_service/internal/dtos/user"
 	"context"
 
 	"connectrpc.com/connect"
-	bus_core "github.com/ngochuyk812/building_block/pkg/mediator/bus"
 	authv1 "github.com/ngochuyk812/proto-bds/gen/auth/v1"
 	"github.com/ngochuyk812/proto-bds/gen/statusmsg/v1"
 )
@@ -17,11 +15,7 @@ func (s *authServerHandler) GetProfile(ctx context.Context, req *connect.Request
 		Status: &statusmsg.StatusMessage{},
 	})
 
-	result, err := bus_core.Send[commands_user.GetProfileCommand, commands_user.GetProfileCommandResponse](
-		s.cabin.GetInfra().GetMediator(),
-		ctx,
-		commands_user.GetProfileCommand{},
-	)
+	result, err := s.usecaseManager.GetUserUsecase().GetProfile(ctx, userdto.GetProfileCommand{})
 	if err != nil {
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
@@ -43,11 +37,7 @@ func (s *authServerHandler) Logout(ctx context.Context, req *connect.Request[aut
 		Status: &statusmsg.StatusMessage{},
 	})
 
-	result, err := bus_core.Send[commands_auth.LogoutCommand, commands_auth.LogoutCommandResponse](
-		s.cabin.GetInfra().GetMediator(),
-		ctx,
-		commands_auth.LogoutCommand{},
-	)
+	result, err := s.usecaseManager.GetUserUsecase().Logout(ctx, userdto.LogoutCommand{})
 	if err != nil {
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
@@ -62,16 +52,12 @@ func (s *authServerHandler) UpdateProfile(ctx context.Context, req *connect.Requ
 		Status: &statusmsg.StatusMessage{},
 	})
 
-	result, err := bus_core.Send[commands_user.UpdateProfileCommand, commands_user.UpdateProfileCommandResponse](
-		s.cabin.GetInfra().GetMediator(),
-		ctx,
-		commands_user.UpdateProfileCommand{
-			FirstName: req.Msg.GetFirstName(),
-			LastName:  req.Msg.GetLastName(),
-			Phone:     req.Msg.GetPhone(),
-			Address:   req.Msg.GetAddress(),
-		},
-	)
+	result, err := s.usecaseManager.GetUserUsecase().UpdateProfile(ctx, userdto.UpdateProfileCommand{
+		FirstName: req.Msg.GetFirstName(),
+		LastName:  req.Msg.GetLastName(),
+		Phone:     req.Msg.GetPhone(),
+		Address:   req.Msg.GetAddress(),
+	})
 	if err != nil {
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err

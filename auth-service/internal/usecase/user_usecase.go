@@ -37,7 +37,7 @@ type UserUsecase interface {
 	Logout(ctx context.Context, req userdto.LogoutCommand) (*userdto.LogoutResponse, error)
 }
 
-func NewUserService(cabin infra.Cabin) UserUsecase {
+func NewUserUsecase(cabin infra.Cabin) UserUsecase {
 	return &userService{
 		Cabin: cabin,
 	}

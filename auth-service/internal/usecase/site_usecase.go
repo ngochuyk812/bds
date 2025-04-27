@@ -6,6 +6,7 @@ import (
 	"auth_service/internal/infra"
 	"auth_service/internal/repository"
 	"context"
+	"math"
 	"time"
 )
 
@@ -15,10 +16,9 @@ type siteUseCase struct {
 
 type SiteUseCase interface {
 	CreateSite(ctx context.Context, req sitedto.CreateSiteCommand) error
-
 	UpdateSite(ctx context.Context, req sitedto.UpdateSiteCommand) error
-
 	DeleteSite(ctx context.Context, req sitedto.DeleteSiteCommand) error
+	GetSitesPaging(ctx context.Context, req sitedto.FetchSitesQuery) (*sitedto.FetchSitesResponse, error)
 }
 
 func NewSiteUseCase(cabin infra.Cabin) SiteUseCase {
@@ -63,4 +63,31 @@ func (s *siteUseCase) DeleteSite(ctx context.Context, req sitedto.DeleteSiteComm
 		err := uow.GetSiteRepository().DeleteSiteByGuid(ctx, req.Guid)
 		return err
 	})
+}
+
+func (s *siteUseCase) GetSitesPaging(ctx context.Context, req sitedto.FetchSitesQuery) (*sitedto.FetchSitesResponse, error) {
+	paging, err := s.Cabin.GetUnitOfWork().GetSiteRepository().GetSitesPaging(ctx, req.Page, req.PageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &sitedto.FetchSitesResponse{
+		Page:       req.Page,
+		PageSize:   req.PageSize,
+		Total:      paging.Total,
+		TotalPages: int32(math.Ceil(float64(paging.Total) / float64(req.PageSize))),
+	}
+
+	items := make([]sitedto.SiteModel, len(paging.Items))
+	for i, item := range paging.Items {
+		items[i] = sitedto.SiteModel{
+			ID:     int64(item.ID),
+			Guid:   item.Guid,
+			Name:   item.Name,
+			SiteId: item.SiteId,
+		}
+	}
+	res.Items = items
+
+	return res, nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"auth_service/interfaces/v1/connectrpc"
 	"auth_service/internal/infra"
+	"auth_service/internal/infra/database"
 	"auth_service/internal/usecase"
 	"os"
 	"os/signal"
@@ -31,10 +32,14 @@ func main() {
 	infa := infrastructurecore.NewInfra(config)
 	infa.InjectSQL(databases.MYSQL)
 	infa.InjectCache(config.RedisConnect, config.RedisPass)
-	unf := repository.NewUnitOfWork(nil)
-	cabin := infra.NewCabin(infa, unf)
 	infa.InjectEventbus(brokers, topic)
+
+	db := database.NewSQLDB(config.DbConnect, config.DbName)
+	unf := repository.NewUnitOfWork(db)
+
+	cabin := infra.NewCabin(infa, unf)
 	useCases := usecase.NewUsecaseManager(cabin)
+
 	app := infrastructurecore.NewServe(":"+config.Port, infa.GetLogger())
 	path, handler := connectrpc.NewAuthServer(useCases, cabin)
 	app.Mux.Handle(path, handler)

@@ -15,7 +15,7 @@ type usecaseManager struct {
 func NewUsecaseManager(cabin infra.Cabin) UsecaseManager {
 	return &usecaseManager{
 		siteUseCase: NewSiteUseCase(cabin),
-		userUsecase: NewUserService(cabin),
+		userUsecase: NewUserUsecase(cabin),
 	}
 }
 

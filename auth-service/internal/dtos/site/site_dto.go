@@ -20,3 +20,23 @@ type UpdateSiteCommand struct {
 type DeleteSiteCommand struct {
 	Guid string `json:"guid" validate:"required"`
 }
+
+type FetchSitesQuery struct {
+	Page     int32
+	PageSize int32
+}
+
+type SiteModel struct {
+	ID     int64  `json:"id"`
+	Guid   string `json:"guid"`
+	Name   string `json:"name"`
+	SiteId string `json:"site_id"`
+}
+
+type FetchSitesResponse struct {
+	Items      []SiteModel
+	Total      int
+	Page       int32
+	PageSize   int32
+	TotalPages int32
+}

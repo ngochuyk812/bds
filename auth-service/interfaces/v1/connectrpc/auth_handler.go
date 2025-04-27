@@ -1,11 +1,10 @@
 package connectrpc
 
 import (
-	commands_auth "auth_service/internal/app/commands/auth"
+	userdto "auth_service/internal/dtos/user"
 	"context"
 
 	"connectrpc.com/connect"
-	bus_core "github.com/ngochuyk812/building_block/pkg/mediator/bus"
 	authv1 "github.com/ngochuyk812/proto-bds/gen/auth/v1"
 	"github.com/ngochuyk812/proto-bds/gen/statusmsg/v1"
 )
@@ -14,18 +13,21 @@ func (s *authServerHandler) Login(ctx context.Context, req *connect.Request[auth
 	res := connect.NewResponse(&authv1.LoginResponse{
 		Status: &statusmsg.StatusMessage{},
 	})
-	result, err := bus_core.Send[commands_auth.LoginCommand, commands_auth.LoginCommandResponse](s.cabin.GetInfra().GetMediator(), ctx, commands_auth.LoginCommand{
+
+	result, err := s.usecaseManager.GetUserUsecase().Login(ctx, userdto.LoginCommand{
 		Email:    req.Msg.GetEmail(),
 		Password: req.Msg.GetPassword(),
 	})
+
 	if err != nil {
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
+
 	res.Msg.AccessToken = result.AccessToken
 	res.Msg.RefreshToken = result.RefreshToken
 	res.Msg.Status = result.StatusMessage
-	return res, err
+	return res, nil
 }
 
 // SignUp implements authv1connect.AuthServiceHandler.
@@ -33,16 +35,19 @@ func (s *authServerHandler) SignUp(ctx context.Context, req *connect.Request[aut
 	res := connect.NewResponse(&authv1.SignUpResponse{
 		Status: &statusmsg.StatusMessage{},
 	})
-	result, err := bus_core.Send[commands_auth.SignUpCommand, commands_auth.SignUpCommandResponse](s.cabin.GetInfra().GetMediator(), ctx, commands_auth.SignUpCommand{
+
+	result, err := s.usecaseManager.GetUserUsecase().SignUp(ctx, userdto.SignUpCommand{
 		Email:    req.Msg.GetEmail(),
 		Password: req.Msg.GetPassword(),
 	})
+
 	if err != nil {
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
+
 	res.Msg.Status = result.StatusMessage
-	return res, err
+	return res, nil
 }
 
 // VerifySignUp implements authv1connect.AuthServiceHandler.
@@ -50,16 +55,19 @@ func (s *authServerHandler) VerifySignUp(ctx context.Context, req *connect.Reque
 	res := connect.NewResponse(&authv1.VerifySignUpResponse{
 		Status: &statusmsg.StatusMessage{},
 	})
-	result, err := bus_core.Send[commands_auth.VerifySignUpCommand, commands_auth.VerifySignUpCommandResponse](s.cabin.GetInfra().GetMediator(), ctx, commands_auth.VerifySignUpCommand{
+
+	result, err := s.usecaseManager.GetUserUsecase().VerifySignUp(ctx, userdto.VerifySignUpCommand{
 		Email: req.Msg.GetEmail(),
 		Otp:   req.Msg.GetOtp(),
 	})
+
 	if err != nil {
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
+
 	res.Msg.Status = result.StatusMessage
-	return res, err
+	return res, nil
 }
 
 // RefreshToken implements authv1connect.AuthServiceHandler.
@@ -67,15 +75,18 @@ func (s *authServerHandler) RefreshToken(ctx context.Context, req *connect.Reque
 	res := connect.NewResponse(&authv1.RefreshTokenResponse{
 		Status: &statusmsg.StatusMessage{},
 	})
-	result, err := bus_core.Send[commands_auth.RefreshTokenCommand, commands_auth.RefreshTokenCommandResponse](s.cabin.GetInfra().GetMediator(), ctx, commands_auth.RefreshTokenCommand{
+
+	result, err := s.usecaseManager.GetUserUsecase().RefreshToken(ctx, userdto.RefreshTokenCommand{
 		RefreshToken: req.Msg.GetRefreshToken(),
 	})
+
 	if err != nil {
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
+
 	res.Msg.AccessToken = result.AccessToken
 	res.Msg.RefreshToken = result.RefreshToken
 	res.Msg.Status = result.StatusMessage
-	return res, err
+	return res, nil
 }
