@@ -1,14 +1,12 @@
 package entities
 
-import "database/sql"
-
 type UserDetail struct {
 	UserGuid  string
-	FirstName sql.NullString
-	LastName  sql.NullString
-	Phone     sql.NullString
-	Avatar    sql.NullString
-	Address   sql.NullString
+	FirstName *string
+	LastName  *string
+	Phone     *string
+	Avatar    *string
+	Address   *string
 	BaseEntity
 }
 

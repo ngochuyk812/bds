@@ -3,6 +3,7 @@ package main
 import (
 	"auth_service/interfaces/v1/connectrpc"
 	"auth_service/internal/infra"
+	"auth_service/internal/usecase"
 	"os"
 	"os/signal"
 
@@ -10,8 +11,6 @@ import (
 	"fmt"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-
-	bus "auth_service/internal/infra/bus"
 
 	infrastructurecore "github.com/ngochuyk812/building_block/infrastructure/core"
 	"github.com/ngochuyk812/building_block/infrastructure/databases"
@@ -32,13 +31,12 @@ func main() {
 	infa := infrastructurecore.NewInfra(config)
 	infa.InjectSQL(databases.MYSQL)
 	infa.InjectCache(config.RedisConnect, config.RedisPass)
-	unf := repository.NewUnitOfWork(infa.GetDatabase().GetWriteDB(), infa.GetDatabase().GetReadDB())
+	unf := repository.NewUnitOfWork(nil)
 	cabin := infra.NewCabin(infa, unf)
-	bus.InjectBus(cabin)
 	infa.InjectEventbus(brokers, topic)
-
+	useCases := usecase.NewUsecaseManager(cabin)
 	app := infrastructurecore.NewServe(":"+config.Port, infa.GetLogger())
-	path, handler := connectrpc.NewAuthServer(cabin)
+	path, handler := connectrpc.NewAuthServer(useCases, cabin)
 	app.Mux.Handle(path, handler)
 
 	c := make(chan os.Signal, 1)

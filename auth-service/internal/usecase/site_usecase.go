@@ -9,22 +9,30 @@ import (
 	"time"
 )
 
-type SiteService struct {
+type siteUseCase struct {
 	Cabin infra.Cabin
 }
 
-func NewSiteService(cabin infra.Cabin) *SiteService {
-	return &SiteService{
+type SiteUseCase interface {
+	CreateSite(ctx context.Context, req sitedto.CreateSiteCommand) error
+
+	UpdateSite(ctx context.Context, req sitedto.UpdateSiteCommand) error
+
+	DeleteSite(ctx context.Context, req sitedto.DeleteSiteCommand) error
+}
+
+func NewSiteUseCase(cabin infra.Cabin) SiteUseCase {
+	return &siteUseCase{
 		Cabin: cabin,
 	}
 }
 
-func (s *SiteService) CreateSite(ctx context.Context, name string, siteId string) error {
+func (s *siteUseCase) CreateSite(ctx context.Context, req sitedto.CreateSiteCommand) error {
 	return s.Cabin.GetUnitOfWork().ExecTx(ctx, func(uow repository.UnitOfWork) error {
 		siteEntity := &entities.Site{
-			Name: name,
+			Name: req.Name,
 			BaseEntity: entities.BaseEntity{
-				SiteId:    siteId,
+				SiteId:    req.SiteId,
 				CreatedAt: time.Now().Unix(),
 			},
 		}
@@ -33,7 +41,7 @@ func (s *SiteService) CreateSite(ctx context.Context, name string, siteId string
 	})
 }
 
-func (s *SiteService) UpdateSite(ctx context.Context, req sitedto.UpdateSiteCommand) error {
+func (s *siteUseCase) UpdateSite(ctx context.Context, req sitedto.UpdateSiteCommand) error {
 
 	exist, err := s.Cabin.GetUnitOfWork().GetSiteRepository().GetSiteByGuid(ctx, req.Guid)
 	if exist != nil {
@@ -50,9 +58,9 @@ func (s *SiteService) UpdateSite(ctx context.Context, req sitedto.UpdateSiteComm
 	})
 }
 
-func (s *SiteService) DeleteSite(ctx context.Context, guid string) error {
+func (s *siteUseCase) DeleteSite(ctx context.Context, req sitedto.DeleteSiteCommand) error {
 	return s.Cabin.GetUnitOfWork().ExecTx(ctx, func(uow repository.UnitOfWork) error {
-		err := uow.GetSiteRepository().DeleteSiteByGuid(ctx, guid)
+		err := uow.GetSiteRepository().DeleteSiteByGuid(ctx, req.Guid)
 		return err
 	})
 }

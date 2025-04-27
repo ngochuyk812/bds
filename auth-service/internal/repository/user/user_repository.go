@@ -42,23 +42,10 @@ func (u *userRepository) CreateUser(ctx context.Context, userEntity *entities.Us
 func (u *userRepository) UpdateUser(ctx context.Context, userEntity *entities.User) error {
 	userEntity.UpdatedAt = time.Now().Unix()
 
-	data := map[string]interface{}{
-		"email":     userEntity.Email,
-		"active":    userEntity.Active,
-		"updatedat": userEntity.UpdatedAt,
-	}
-
-	if userEntity.HashPassword != "" {
-		data["hash_password"] = userEntity.HashPassword
-	}
-	if userEntity.Salt != "" {
-		data["salt"] = userEntity.Salt
-	}
-
 	return u.db.WithContext(ctx).
 		Model(&entities.User{}).
 		Where("guid = ?", userEntity.Guid).
-		Updates(data).Error
+		Updates(userEntity).Error
 }
 
 func (u *userRepository) GetUserByEmail(ctx context.Context, email string) (*entities.User, error) {

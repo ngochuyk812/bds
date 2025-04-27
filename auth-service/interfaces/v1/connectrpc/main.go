@@ -2,6 +2,7 @@ package connectrpc
 
 import (
 	"auth_service/internal/infra"
+	"auth_service/internal/usecase"
 	"net/http"
 
 	"connectrpc.com/connect"
@@ -12,12 +13,14 @@ import (
 var _ authv1connect.AuthServiceHandler = &authServerHandler{}
 
 type authServerHandler struct {
-	cabin infra.Cabin
+	usecaseManager usecase.UsecaseManager
+	cabin          infra.Cabin
 }
 
-func NewAuthServer(cabin infra.Cabin) (pattern string, handler http.Handler) {
+func NewAuthServer(usecaseManager usecase.UsecaseManager, cabin infra.Cabin) (pattern string, handler http.Handler) {
 	impl := &authServerHandler{
-		cabin: cabin,
+		usecaseManager: usecaseManager,
+		cabin:          cabin,
 	}
 	path, handler := authv1connect.NewAuthServiceHandler(impl,
 		connect.WithInterceptors(
