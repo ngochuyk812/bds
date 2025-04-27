@@ -12,7 +12,7 @@ require (
 
 require (
 	github.com/Microsoft/go-winio v0.6.2
-	github.com/ngochuyk812/building_block v0.1.21
+	github.com/ngochuyk812/building_block v0.1.23
 )
 
 require (
@@ -25,7 +25,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/compress v1.15.11 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 	github.com/pierrec/lz4/v4 v4.1.16 // indirect
 	github.com/segmentio/kafka-go v0.4.47 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
@@ -36,9 +35,6 @@ require (
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/golang-migrate/migrate/v4 v4.18.2
-	github.com/hashicorp/errwrap v1.1.0 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )

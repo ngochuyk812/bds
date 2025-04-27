@@ -18,8 +18,10 @@ import (
 )
 
 var (
-	brokers = os.Getenv("BROKERS_EVENTBUS")
-	topic   = os.Getenv("TOPIC_EVENTBUS")
+	brokers   = os.Getenv("BROKERS_EVENTBUS")
+	topic     = os.Getenv("TOPIC_EVENTBUS")
+	dbConnect = os.Getenv("DB_CONNECT")
+	dbName    = os.Getenv("DB_NAME")
 )
 
 func main() {
@@ -32,7 +34,7 @@ func main() {
 	infa.InjectCache(config.RedisConnect, config.RedisPass)
 	infa.InjectEventbus(brokers, topic)
 
-	db := database.NewSQLDB(config.DbConnect, config.DbName)
+	db := database.NewSQLDB(dbConnect, dbName)
 	unf := repository.NewUnitOfWork(db)
 
 	cabin := infra.NewCabin(infa, unf)

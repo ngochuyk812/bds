@@ -3,6 +3,7 @@ package usecase
 import (
 	userdto "auth_service/internal/dtos/user"
 	"auth_service/internal/entities"
+	"auth_service/internal/eventbus/events"
 	"auth_service/internal/infra"
 	"auth_service/internal/repository"
 	"auth_service/pkg"
@@ -253,6 +254,15 @@ func (s *userService) SignUp(ctx context.Context, req userdto.SignUpCommand) (*u
 	}
 
 	fmt.Printf("OTP for %s: %s\n", req.Email, otp)
+	err = s.Cabin.GetInfra().GetEventbus().Publish(ctx, &events.IntegrationEventSendMail{
+		Body:    "OTP của bạn là " + otp,
+		Subject: "Mã xác nhận đăng ký",
+		To:      []string{req.Email},
+	})
+	if err != nil {
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+		return res, err
+	}
 
 	res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
 	return res, nil
