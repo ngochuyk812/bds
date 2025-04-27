@@ -1,13 +1,13 @@
 package repositoryuser
 
 import (
-	"auth_service/internal/db/user"
 	"auth_service/internal/entity"
 	"context"
-	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/ngochuyk812/building_block/infrastructure/helpers"
+	"gorm.io/gorm"
 )
 
 type UserRepository interface {
@@ -18,101 +18,74 @@ type UserRepository interface {
 }
 
 type userRepository struct {
-	readQueries  *user.Queries
-	writeQueries *user.Queries
+	db *gorm.DB
+}
+
+func NewUserRepository(db *gorm.DB) UserRepository {
+	return &userRepository{
+		db: db,
+	}
 }
 
 func (u *userRepository) CreateUser(ctx context.Context, userEntity *entity.User) error {
-	authContext, oke := helpers.AuthContext(ctx)
-	if !oke {
+	authContext, ok := helpers.AuthContext(ctx)
+	if !ok {
 		return errors.New("cannot get auth context")
 	}
 
-	err := u.readQueries.CreateUser(ctx, user.CreateUserParams{
-		Email:        userEntity.Email,
-		Siteid:       authContext.IdSite,
-		Guid:         userEntity.Guid,
-		HashPassword: userEntity.HashPassword,
-		Salt:         userEntity.Salt,
-		Createdat:    userEntity.Createdat,
-	})
+	userEntity.SiteId = authContext.IdSite
+	userEntity.Createdat = time.Now().Unix()
 
-	return err
+	return u.db.WithContext(ctx).Create(userEntity).Error
 }
 
 func (u *userRepository) UpdateUser(ctx context.Context, userEntity *entity.User) error {
-	err := u.readQueries.UpdateUserByGuid(ctx, user.UpdateUserByGuidParams{
-		Email: sql.NullString{
-			String: userEntity.Email,
-			Valid:  len(userEntity.Email) > 0,
-		},
-		Guid:         userEntity.Guid,
-		UpdatedAt:    userEntity.Updatedat,
-		Active:       userEntity.Active,
-		HashPassword: sql.NullString{String: userEntity.HashPassword, Valid: len(userEntity.HashPassword) > 0},
-		Salt:         sql.NullString{String: userEntity.Salt, Valid: len(userEntity.Salt) > 0},
-	})
+	userEntity.UpdatedAt = time.Now().Unix()
 
-	return err
+	data := map[string]interface{}{
+		"email":     userEntity.Email,
+		"active":    userEntity.Active,
+		"updatedat": userEntity.UpdatedAt,
+	}
+
+	if userEntity.HashPassword != "" {
+		data["hash_password"] = userEntity.HashPassword
+	}
+	if userEntity.Salt != "" {
+		data["salt"] = userEntity.Salt
+	}
+
+	return u.db.WithContext(ctx).
+		Model(&entity.User{}).
+		Where("guid = ?", userEntity.Guid).
+		Updates(data).Error
 }
+
 func (u *userRepository) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
-	authContext, oke := helpers.AuthContext(ctx)
-	if !oke {
+	authContext, ok := helpers.AuthContext(ctx)
+	if !ok {
 		return nil, errors.New("cannot get auth context")
 	}
-	rs, err := u.readQueries.GetUserByEmail(ctx, user.GetUserByEmailParams{
-		Email:  email,
-		Siteid: authContext.IdSite,
-	})
-	if err == sql.ErrNoRows {
+
+	var user entity.User
+	err := u.db.WithContext(ctx).
+		Where("email = ? AND siteid = ?", email, authContext.IdSite).
+		First(&user).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
-
-	return &entity.User{
-		ID:           rs.ID,
-		Guid:         rs.Guid,
-		Siteid:       rs.Siteid,
-		Email:        rs.Email,
-		HashPassword: rs.HashPassword,
-		Salt:         rs.Salt,
-		Active:       rs.Active,
-		Createdat:    rs.Createdat,
-		Updatedat:    rs.Updatedat,
-		Deletedat:    rs.Deletedat,
-	}, err
+	return &user, err
 }
 
 func (u *userRepository) GetUserByGuid(ctx context.Context, guid string) (*entity.User, error) {
-	rs, err := u.readQueries.GetUserByGuid(ctx, guid)
-	if err == sql.ErrNoRows {
+	var user entity.User
+	err := u.db.WithContext(ctx).
+		Where("guid = ?", guid).
+		First(&user).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
-
-	return &entity.User{
-		ID:           rs.ID,
-		Guid:         rs.Guid,
-		Siteid:       rs.Siteid,
-		Email:        rs.Email,
-		HashPassword: rs.HashPassword,
-		Salt:         rs.Salt,
-		Active:       rs.Active,
-		Createdat:    rs.Createdat,
-		Updatedat:    rs.Updatedat,
-		Deletedat:    rs.Deletedat,
-	}, err
-}
-func NewUserRepository(readDB, writeDB *sql.DB, tx *sql.Tx) UserRepository {
-
-	if tx != nil {
-		txDB := user.New(tx)
-		return &userRepository{
-			readQueries:  txDB,
-			writeQueries: txDB,
-		}
-	}
-	return &userRepository{
-		readQueries:  user.New(readDB),
-		writeQueries: user.New(writeDB),
-	}
-
+	return &user, err
 }
