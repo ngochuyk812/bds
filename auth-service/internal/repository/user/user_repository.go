@@ -1,7 +1,7 @@
 package repositoryuser
 
 import (
-	"auth_service/internal/entity"
+	"auth_service/internal/entities"
 	"context"
 	"errors"
 	"time"
@@ -11,10 +11,10 @@ import (
 )
 
 type UserRepository interface {
-	GetUserByEmail(ctx context.Context, email string) (*entity.User, error)
-	GetUserByGuid(ctx context.Context, guid string) (*entity.User, error)
-	CreateUser(ctx context.Context, user *entity.User) error
-	UpdateUser(ctx context.Context, user *entity.User) error
+	GetUserByEmail(ctx context.Context, email string) (*entities.User, error)
+	GetUserByGuid(ctx context.Context, guid string) (*entities.User, error)
+	CreateUser(ctx context.Context, user *entities.User) error
+	UpdateUser(ctx context.Context, user *entities.User) error
 }
 
 type userRepository struct {
@@ -27,19 +27,19 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	}
 }
 
-func (u *userRepository) CreateUser(ctx context.Context, userEntity *entity.User) error {
+func (u *userRepository) CreateUser(ctx context.Context, userEntity *entities.User) error {
 	authContext, ok := helpers.AuthContext(ctx)
 	if !ok {
 		return errors.New("cannot get auth context")
 	}
 
 	userEntity.SiteId = authContext.IdSite
-	userEntity.Createdat = time.Now().Unix()
+	userEntity.CreatedAt = time.Now().Unix()
 
 	return u.db.WithContext(ctx).Create(userEntity).Error
 }
 
-func (u *userRepository) UpdateUser(ctx context.Context, userEntity *entity.User) error {
+func (u *userRepository) UpdateUser(ctx context.Context, userEntity *entities.User) error {
 	userEntity.UpdatedAt = time.Now().Unix()
 
 	data := map[string]interface{}{
@@ -56,18 +56,18 @@ func (u *userRepository) UpdateUser(ctx context.Context, userEntity *entity.User
 	}
 
 	return u.db.WithContext(ctx).
-		Model(&entity.User{}).
+		Model(&entities.User{}).
 		Where("guid = ?", userEntity.Guid).
 		Updates(data).Error
 }
 
-func (u *userRepository) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+func (u *userRepository) GetUserByEmail(ctx context.Context, email string) (*entities.User, error) {
 	authContext, ok := helpers.AuthContext(ctx)
 	if !ok {
 		return nil, errors.New("cannot get auth context")
 	}
 
-	var user entity.User
+	var user entities.User
 	err := u.db.WithContext(ctx).
 		Where("email = ? AND siteid = ?", email, authContext.IdSite).
 		First(&user).Error
@@ -78,8 +78,8 @@ func (u *userRepository) GetUserByEmail(ctx context.Context, email string) (*ent
 	return &user, err
 }
 
-func (u *userRepository) GetUserByGuid(ctx context.Context, guid string) (*entity.User, error) {
-	var user entity.User
+func (u *userRepository) GetUserByGuid(ctx context.Context, guid string) (*entities.User, error) {
+	var user entities.User
 	err := u.db.WithContext(ctx).
 		Where("guid = ?", guid).
 		First(&user).Error

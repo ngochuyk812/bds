@@ -1,7 +1,7 @@
 package commands_site
 
 import (
-	"auth_service/internal/entity"
+	"auth_service/internal/entities"
 	"auth_service/internal/infra"
 	"auth_service/internal/repository"
 	"context"
@@ -20,7 +20,7 @@ var _ bus_core.IHandler[CreateSiteCommand, CreateSiteCommandResponse] = (*Create
 func (h *CreateSiteHandler) Handle(ctx context.Context, cmd CreateSiteCommand) (CreateSiteCommandResponse, error) {
 	res := CreateSiteCommandResponse{}
 	err := h.Cabin.GetUnitOfWork().ExecTx(ctx, func(uow repository.UnitOfWork) error {
-		siteEntity := &entity.Site{
+		siteEntity := &entities.Site{
 			Name:      cmd.Name,
 			Siteid:    cmd.SiteId,
 			Createdat: time.Now().Unix(),
@@ -41,7 +41,7 @@ var _ bus_core.IHandler[UpdateSiteCommand, UpdateSiteCommandResponse] = (*Update
 func (h *UpdateSiteHandler) Handle(ctx context.Context, cmd UpdateSiteCommand) (UpdateSiteCommandResponse, error) {
 	res := UpdateSiteCommandResponse{}
 	err := h.Cabin.GetUnitOfWork().ExecTx(ctx, func(uow repository.UnitOfWork) error {
-		siteEntity := &entity.Site{
+		siteEntity := &entities.Site{
 			Guid:      cmd.Guid,
 			Name:      cmd.Name,
 			Siteid:    cmd.SiteId,

@@ -1,7 +1,7 @@
 package commands_user
 
 import (
-	"auth_service/internal/entity"
+	"auth_service/internal/entities"
 	"auth_service/internal/infra"
 	"context"
 	"database/sql"
@@ -38,7 +38,7 @@ func (h *UpdateProfileHandler) Handle(ctx context.Context, cmd UpdateProfileComm
 		return res, nil
 	}
 
-	userDetailEntity := &entity.UserDetail{
+	userDetailEntity := &entities.UserDetail{
 		UserGuid:  authContext.IdAuthUser,
 		FirstName: cmd.FirstName,
 		LastName:  cmd.LastName,

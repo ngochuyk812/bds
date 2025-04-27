@@ -2,7 +2,7 @@ package commands_auth
 
 import (
 	"auth_service/internal/app/eventbus/events"
-	"auth_service/internal/entity"
+	"auth_service/internal/entities"
 	"auth_service/internal/infra"
 	"auth_service/pkg"
 	"context"
@@ -118,7 +118,7 @@ func (h *SignUpCommandHandler) Handle(ctx context.Context, cmd SignUpCommand) (S
 		return res, err
 	}
 	if exist != nil {
-		userEntity := &entity.User{
+		userEntity := &entities.User{
 			Guid:         exist.Guid,
 			Email:        exist.Email,
 			HashPassword: hash,
@@ -128,7 +128,7 @@ func (h *SignUpCommandHandler) Handle(ctx context.Context, cmd SignUpCommand) (S
 		}
 		err = h.Cabin.GetUnitOfWork().GetUserRepository().UpdateUser(ctx, userEntity)
 	} else {
-		userEntity := &entity.User{
+		userEntity := &entities.User{
 			Guid:         guid.String(),
 			Email:        cmd.Email,
 			HashPassword: hash,
@@ -194,7 +194,7 @@ func (h *VerifySignUpCommandHandler) Handle(ctx context.Context, cmd VerifySignU
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_INCORRECT_OTP
 		return res, nil
 	}
-	userEntity := &entity.User{
+	userEntity := &entities.User{
 		Guid:      exist.Guid,
 		Email:     exist.Email,
 		Active:    sql.NullBool{Bool: true, Valid: true},
