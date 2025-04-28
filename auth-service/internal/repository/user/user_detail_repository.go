@@ -1,7 +1,8 @@
-package repositoryuserdetail
+package repositoryuser
 
 import (
 	"auth_service/internal/entities"
+	repositorybase "auth_service/internal/repository/base"
 	"context"
 	"errors"
 	"time"
@@ -10,26 +11,24 @@ import (
 )
 
 type UserDetailRepository interface {
-	CreateUserDetail(ctx context.Context, userDetail *entities.UserDetail) error
 	GetUserDetailByUserGuid(ctx context.Context, userGuid string) (*entities.UserDetail, error)
-	UpdateUserDetail(ctx context.Context, userDetail *entities.UserDetail) error
-	DeleteUserDetail(ctx context.Context, userGuid string) error
+	GetBaseRepository() repositorybase.Repository[entities.UserDetail]
 }
 
 type userDetailRepository struct {
-	db *gorm.DB
+	db   *gorm.DB
+	base repositorybase.Repository[entities.UserDetail]
 }
 
 func NewUserDetailRepository(db *gorm.DB) UserDetailRepository {
 	return &userDetailRepository{
-		db: db,
+		db:   db,
+		base: repositorybase.NewRepository[entities.UserDetail](db),
 	}
 }
 
-func (u *userDetailRepository) CreateUserDetail(ctx context.Context, userDetail *entities.UserDetail) error {
-	now := time.Now().Unix()
-	userDetail.CreatedAt = now
-	return u.db.WithContext(ctx).Create(userDetail).Error
+func (u *userDetailRepository) GetBaseRepository() repositorybase.Repository[entities.UserDetail] {
+	return u.base
 }
 
 func (u *userDetailRepository) GetUserDetailByUserGuid(ctx context.Context, userGuid string) (*entities.UserDetail, error) {
@@ -39,16 +38,6 @@ func (u *userDetailRepository) GetUserDetailByUserGuid(ctx context.Context, user
 		return nil, nil
 	}
 	return &detail, err
-}
-
-func (u *userDetailRepository) UpdateUserDetail(ctx context.Context, userDetail *entities.UserDetail) error {
-	now := time.Now().Unix()
-	userDetail.UpdatedAt = now
-
-	return u.db.WithContext(ctx).
-		Model(&entities.UserDetail{}).
-		Where("user_guid = ?", userDetail.UserGuid).
-		Updates(userDetail).Error
 }
 
 func (u *userDetailRepository) DeleteUserDetail(ctx context.Context, userGuid string) error {

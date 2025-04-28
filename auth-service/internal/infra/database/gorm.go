@@ -35,7 +35,7 @@ func NewSQLDB(connectString string, dbName string) *gorm.DB {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	if err := db.AutoMigrate(entities); err != nil {
+	if err := db.AutoMigrate(entities...); err != nil {
 		panic(fmt.Errorf("failed to auto migrate: %v", err))
 	}
 	return db

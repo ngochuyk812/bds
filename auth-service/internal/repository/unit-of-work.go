@@ -3,7 +3,6 @@ package repository
 import (
 	repositorysite "auth_service/internal/repository/site"
 	repositoryuser "auth_service/internal/repository/user"
-	repositoryuserdetail "auth_service/internal/repository/user_detail"
 	"context"
 	"fmt"
 
@@ -25,7 +24,7 @@ func NewUnitOfWork(db *gorm.DB) UnitOfWork {
 type UnitOfWork interface {
 	GetSiteRepository() repositorysite.SiteRepository
 	GetUserRepository() repositoryuser.UserRepository
-	GetUserDetailRepository() repositoryuserdetail.UserDetailRepository
+	GetUserDetailRepository() repositoryuser.UserDetailRepository
 	ExecTx(ctx context.Context, fn func(uow UnitOfWork) error) error
 }
 
@@ -70,12 +69,12 @@ func (u *unitOfWork) GetUserRepository() repositoryuser.UserRepository {
 	return repo
 }
 
-func (u *unitOfWork) GetUserDetailRepository() repositoryuserdetail.UserDetailRepository {
+func (u *unitOfWork) GetUserDetailRepository() repositoryuser.UserDetailRepository {
 	const key = "UserDetailRepository"
 	if repo, ok := u.repos[key]; ok {
-		return repo.(repositoryuserdetail.UserDetailRepository)
+		return repo.(repositoryuser.UserDetailRepository)
 	}
-	repo := repositoryuserdetail.NewUserDetailRepository(u.db)
+	repo := repositoryuser.NewUserDetailRepository(u.db)
 	u.repos[key] = repo
 	return repo
 }

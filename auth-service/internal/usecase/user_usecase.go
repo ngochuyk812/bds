@@ -55,7 +55,7 @@ func (s *userService) UpdateProfile(ctx context.Context, req userdto.UpdateProfi
 		return res, errors.New("cannot get auth context")
 	}
 
-	exist, err := s.Cabin.GetUnitOfWork().GetUserRepository().GetUserByGuid(ctx, authContext.IdAuthUser)
+	exist, err := s.Cabin.GetUnitOfWork().GetUserRepository().GetBaseRepository().GetByGuid(ctx, authContext.IdAuthUser)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
@@ -73,7 +73,7 @@ func (s *userService) UpdateProfile(ctx context.Context, req userdto.UpdateProfi
 			Phone:     &req.Phone,
 			Address:   &req.Address,
 		}
-		return uow.GetUserDetailRepository().UpdateUserDetail(ctx, userDetailEntity)
+		return uow.GetUserDetailRepository().GetBaseRepository().Update(ctx, userDetailEntity)
 	})
 
 	if err != nil {
@@ -96,7 +96,7 @@ func (s *userService) GetProfile(ctx context.Context, req userdto.GetProfileComm
 		return res, errors.New("cannot get auth context")
 	}
 
-	user, err := s.Cabin.GetUnitOfWork().GetUserRepository().GetUserByGuid(ctx, authContext.IdAuthUser)
+	user, err := s.Cabin.GetUnitOfWork().GetUserRepository().GetBaseRepository().GetByGuid(ctx, authContext.IdAuthUser)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
@@ -223,7 +223,7 @@ func (s *userService) SignUp(ctx context.Context, req userdto.SignUpCommand) (*u
 				Guid: newGuid.String(),
 			},
 		}
-		err = uow.GetUserRepository().CreateUser(ctx, userEntity)
+		err = uow.GetUserRepository().GetBaseRepository().Create(ctx, userEntity)
 
 		if err != nil {
 			return err
@@ -235,7 +235,7 @@ func (s *userService) SignUp(ctx context.Context, req userdto.SignUpCommand) (*u
 				FirstName: &req.FirstName,
 				LastName:  &req.LastName,
 			}
-			return uow.GetUserDetailRepository().CreateUserDetail(ctx, userDetailEntity)
+			return uow.GetUserDetailRepository().GetBaseRepository().Create(ctx, userDetailEntity)
 		}
 
 		return nil
@@ -301,7 +301,7 @@ func (s *userService) VerifySignUp(ctx context.Context, req userdto.VerifySignUp
 
 	err = s.Cabin.GetUnitOfWork().ExecTx(ctx, func(uow repository.UnitOfWork) error {
 		exist.Active = true
-		return uow.GetUserRepository().UpdateUser(ctx, exist)
+		return uow.GetUserRepository().GetBaseRepository().Create(ctx, exist)
 	})
 
 	if err != nil {
@@ -326,7 +326,7 @@ func (s *userService) RefreshToken(ctx context.Context, req userdto.RefreshToken
 		return res, err
 	}
 
-	exist, err := s.Cabin.GetUnitOfWork().GetUserRepository().GetUserByGuid(ctx, claims.IdAuthUser)
+	exist, err := s.Cabin.GetUnitOfWork().GetUserRepository().GetBaseRepository().GetByGuid(ctx, claims.IdAuthUser)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err

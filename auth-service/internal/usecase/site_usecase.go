@@ -36,14 +36,14 @@ func (s *siteUseCase) CreateSite(ctx context.Context, req sitedto.CreateSiteComm
 				CreatedAt: time.Now().Unix(),
 			},
 		}
-		err := uow.GetSiteRepository().CreateSite(ctx, siteEntity)
+		err := uow.GetSiteRepository().GetBaseRepository().Create(ctx, siteEntity)
 		return err
 	})
 }
 
 func (s *siteUseCase) UpdateSite(ctx context.Context, req sitedto.UpdateSiteCommand) error {
 
-	exist, err := s.Cabin.GetUnitOfWork().GetSiteRepository().GetSiteByGuid(ctx, req.Guid)
+	exist, err := s.Cabin.GetUnitOfWork().GetSiteRepository().GetBaseRepository().GetByGuid(ctx, req.Guid)
 	if exist != nil {
 		return nil
 	}
@@ -53,14 +53,14 @@ func (s *siteUseCase) UpdateSite(ctx context.Context, req sitedto.UpdateSiteComm
 	exist.Name = req.Name
 
 	return s.Cabin.GetUnitOfWork().ExecTx(ctx, func(uow repository.UnitOfWork) error {
-		err := uow.GetSiteRepository().UpdateSite(ctx, exist)
+		err := uow.GetSiteRepository().GetBaseRepository().Update(ctx, exist)
 		return err
 	})
 }
 
 func (s *siteUseCase) DeleteSite(ctx context.Context, req sitedto.DeleteSiteCommand) error {
 	return s.Cabin.GetUnitOfWork().ExecTx(ctx, func(uow repository.UnitOfWork) error {
-		err := uow.GetSiteRepository().DeleteSiteByGuid(ctx, req.Guid)
+		err := uow.GetSiteRepository().GetBaseRepository().DeleteByGuid(ctx, req.Guid)
 		return err
 	})
 }
