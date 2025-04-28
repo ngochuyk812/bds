@@ -1,6 +1,7 @@
 package database
 
 import (
+	"auth_service/internal/entities"
 	"fmt"
 	"time"
 
@@ -10,6 +11,12 @@ import (
 )
 
 func NewSQLDB(connectString string, dbName string) *gorm.DB {
+
+	var entities = []interface{}{
+		&entities.Site{},
+		&entities.User{},
+		&entities.UserDetail{},
+	}
 
 	db, err := gorm.Open(mysql.Open(connectString), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
@@ -28,7 +35,7 @@ func NewSQLDB(connectString string, dbName string) *gorm.DB {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	if err := db.AutoMigrate(); err != nil {
+	if err := db.AutoMigrate(entities); err != nil {
 		panic(fmt.Errorf("failed to auto migrate: %v", err))
 	}
 	return db

@@ -20,7 +20,7 @@ import (
 var (
 	brokers   = os.Getenv("BROKERS_EVENTBUS")
 	topic     = os.Getenv("TOPIC_EVENTBUS")
-	dbConnect = os.Getenv("DB_CONNECT")
+	dbConnect = os.Getenv("DB_CONNECTION")
 	dbName    = os.Getenv("DB_NAME")
 )
 
@@ -31,8 +31,8 @@ func main() {
 	config := config.NewConfigEnv()
 	config.PoliciesPath = policiesPath
 	infa := infrastructurecore.NewInfra(config)
-	infa.InjectCache(config.RedisConnect, config.RedisPass)
-	infa.InjectEventbus(brokers, topic)
+	// infa.InjectCache(config.RedisConnect, config.RedisPass)
+	// infa.InjectEventbus(brokers, topic)
 
 	db := database.NewSQLDB(dbConnect, dbName)
 	unf := repository.NewUnitOfWork(db)
