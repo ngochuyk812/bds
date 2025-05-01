@@ -5,13 +5,23 @@ class Property {
   +string name
   +string address
   +string description
+  +Contact contact
+  +int city_id
+  +int area_id
   +float latitude
   +float longitude
-  +string owner_id
+  +int[] media_ids
   +int property_type_id
   +datetime created_at
   +datetime updated_at
   +bool is_active
+}
+class Contact {
+  +string full_name
+  +string phone
+  +string email
+  +datetime created_at
+  +datetime updated_at
 }
 
 class PropertyType {
@@ -27,14 +37,26 @@ class Room {
   +string name
   +string description
   +float area
-  +float price
   +int property_id
   +int room_type_id
-  +int status_id
+  +int[] media_ids
+  +int[] category_ids
+  +int[] amenity_ids
+  +string status
   +datetime created_at
   +datetime updated_at
 }
-
+class RoomPricing {
+  +int id
+  +int room_id
+  +string pricing_type         // "monthly", "daily", etc.
+  +decimal base_price
+  +decimal deposit
+  +map[string]decimal fees
+  +string currency
+  +datetime created_at
+  +datetime updated_at
+}
 class RoomType {
   +int id
   +string name
@@ -43,13 +65,7 @@ class RoomType {
   +datetime updated_at
 }
 
-class RoomStatus {
-  +int id
-  +string name
-  +string description
-  +datetime created_at
-  +datetime updated_at
-}
+
 
 class Amenity {
   +int id
@@ -70,13 +86,8 @@ class Media {
   +datetime updated_at
 }
 
-class RoomMedia {
-  +int id
-  +int room_id
-  +string media_id
-  +datetime created_at
-  +datetime updated_at
-}
+
+
 
 class Category {
   +int id
@@ -89,35 +100,27 @@ class Category {
 
 }
 
-class RoomAmenity {
+class Room {
   +int room_id
   +int amenity_id
 }
 
-class RoomCategory {
-  +int room_id
-  +int category_id
-}
 
 Property "1" -- "many" Room : contains >
 Property "many" -- "1" PropertyType : is of >
 
 Room "many" -- "1" RoomType : is of >
-Room "many" -- "1" RoomStatus : has >
-Room "1" -- "many" RoomImage : has >
+Room "1" --> "many" RoomPricing : has
 
-Room "many" -- "many" Amenity : has
-RoomAmenity -- Room
-RoomAmenity -- Amenity
+Room "many" -- "many" Amenity 
 
-Room "many" -- "many" Category : belongs to
-RoomCategory -- Room
-RoomCategory -- Category
+Room "many" -- "many" Category 
 
 Category "many" -- "0..1" Category : has parent >
 
-Room "many" -- "many" Media : has
-RoomMedia -- Room
-RoomMedia -- Media
+Room "1" -- "many" Media : has
+Property "1" -- "many" Media : has
+Property *-- Contact
 
+  
 @enduml
