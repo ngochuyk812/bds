@@ -1,4 +1,4 @@
-package usecase
+package userusecase
 
 import (
 	userdto "auth_service/internal/dtos/user"
@@ -61,7 +61,8 @@ func (s *userService) UpdateProfile(ctx context.Context, req userdto.UpdateProfi
 		return res, err
 	}
 	if exist == nil {
-		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_EXIST
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.StatusMessage.Extras = []string{ErrUserNotFound.Error()}
 		return res, nil
 	}
 
@@ -102,7 +103,8 @@ func (s *userService) GetProfile(ctx context.Context, req userdto.GetProfileComm
 		return res, err
 	}
 	if user == nil {
-		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_EXIST
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.StatusMessage.Extras = []string{ErrUserNotFound.Error()}
 		return res, nil
 	}
 
@@ -135,17 +137,20 @@ func (s *userService) Login(ctx context.Context, req userdto.LoginCommand) (*use
 		return res, err
 	}
 	if exist == nil {
-		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_EXIST
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.StatusMessage.Extras = []string{ErrUserNotFound.Error()}
 		return res, nil
 	}
 	if !exist.Active {
-		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_ACTIVE
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.StatusMessage.Extras = []string{ErrUserNotActive.Error()}
 		return res, nil
 	}
 
 	verify := pkg.VerifyHashPassword(req.Password, exist.HashPassword, exist.Salt)
 	if !verify {
-		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_INCORRECT_PASSWORD
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.StatusMessage.Extras = []string{ErrPasswordIncorrect.Error()}
 		return res, nil
 	}
 
@@ -215,6 +220,14 @@ func (s *userService) SignUp(ctx context.Context, req userdto.SignUpCommand) (*u
 			return err
 		}
 
+		if exist != nil {
+			err = uow.GetUserRepository().GetBaseRepository().DeleteByGuid(ctx, exist.Guid)
+			if err != nil {
+				res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+				return err
+			}
+		}
+
 		userEntity := &entities.User{
 			Email:        req.Email,
 			HashPassword: hash,
@@ -223,9 +236,11 @@ func (s *userService) SignUp(ctx context.Context, req userdto.SignUpCommand) (*u
 				Guid: newGuid.String(),
 			},
 		}
+
 		err = uow.GetUserRepository().GetBaseRepository().Create(ctx, userEntity)
 
 		if err != nil {
+			res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 			return err
 		}
 
@@ -235,18 +250,32 @@ func (s *userService) SignUp(ctx context.Context, req userdto.SignUpCommand) (*u
 				FirstName: &req.FirstName,
 				LastName:  &req.LastName,
 			}
-			return uow.GetUserDetailRepository().GetBaseRepository().Create(ctx, userDetailEntity)
+			err := uow.GetUserDetailRepository().GetBaseRepository().Create(ctx, userDetailEntity)
+			if err != nil {
+				res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
+				return err
+			}
 		}
 
 		return nil
 	})
 
 	if err != nil {
+		return res, err
+	}
+
+	ttl, err := cache.TTL(ctx, cache.WithPrefix(KEY_CACHE_OTP_SIGNUP, req.Email))
+	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
 
-	otp := fmt.Sprintf("%06d", rand.Intn(1000000))
+	if ttl.Minutes() > 8 {
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
+		return res, err
+	}
+
+	otp := fmt.Sprintf("%06d", rand.Intn(10000000))
 	err = cache.Set(ctx, cache.WithPrefix(KEY_CACHE_OTP_SIGNUP, req.Email), otp, 10*time.Minute)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
@@ -299,10 +328,7 @@ func (s *userService) VerifySignUp(ctx context.Context, req userdto.VerifySignUp
 		return res, nil
 	}
 
-	err = s.Cabin.GetUnitOfWork().ExecTx(ctx, func(uow repository.UnitOfWork) error {
-		exist.Active = true
-		return uow.GetUserRepository().GetBaseRepository().Create(ctx, exist)
-	})
+	err = s.Cabin.GetUnitOfWork().GetUserRepository().GetBaseRepository().Update(ctx, exist)
 
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED

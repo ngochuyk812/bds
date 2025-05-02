@@ -1,28 +1,32 @@
 package usecase
 
-import "auth_service/internal/infra"
+import (
+	"auth_service/internal/infra"
+	siteusecase "auth_service/internal/usecase/site"
+	userusecase "auth_service/internal/usecase/user"
+)
 
 type UsecaseManager interface {
-	GetSiteUseCase() SiteUseCase
-	GetUserUsecase() UserUsecase
+	GetSiteUseCase() siteusecase.SiteUseCase
+	GetUserUsecase() userusecase.UserUsecase
 }
 
 type usecaseManager struct {
-	siteUseCase SiteUseCase
-	userUsecase UserUsecase
+	siteUseCase siteusecase.SiteUseCase
+	userUsecase userusecase.UserUsecase
 }
 
 func NewUsecaseManager(cabin infra.Cabin) UsecaseManager {
 	return &usecaseManager{
-		siteUseCase: NewSiteUseCase(cabin),
-		userUsecase: NewUserUsecase(cabin),
+		siteUseCase: siteusecase.NewSiteUseCase(cabin),
+		userUsecase: userusecase.NewUserUsecase(cabin),
 	}
 }
 
-func (u *usecaseManager) GetSiteUseCase() SiteUseCase {
+func (u *usecaseManager) GetSiteUseCase() siteusecase.SiteUseCase {
 	return u.siteUseCase
 }
 
-func (u *usecaseManager) GetUserUsecase() UserUsecase {
+func (u *usecaseManager) GetUserUsecase() userusecase.UserUsecase {
 	return u.userUsecase
 }

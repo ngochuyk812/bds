@@ -2,6 +2,7 @@ package connectrpc
 
 import (
 	sitedto "auth_service/internal/dtos/site"
+	"auth_service/internal/infra/global"
 	"context"
 
 	"connectrpc.com/connect"
@@ -14,18 +15,24 @@ func (s *authServerHandler) CreateSite(ctx context.Context, req *connect.Request
 	res = connect.NewResponse(&authv1.CreateSiteResponse{
 		Status: &statusmsg.StatusMessage{},
 	})
-
-	err = s.usecaseManager.GetSiteUseCase().CreateSite(ctx, sitedto.CreateSiteCommand{
+	dto := sitedto.CreateSiteCommand{
 		SiteId: req.Msg.GetSiteId(),
 		Name:   req.Msg.GetName(),
-	})
+	}
+
+	if err := global.Validate.Struct(dto); err != nil {
+		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.Msg.Status.Extras = []string{err.Error()}
+		return res, nil
+	}
+
+	rs, err := s.usecaseManager.GetSiteUseCase().CreateSite(ctx, dto)
 
 	if err != nil {
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
-
-	res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
+	res.Msg.Status = rs.StatusMessage
 	return res, nil
 }
 
@@ -34,7 +41,7 @@ func (s *authServerHandler) DeleteSite(ctx context.Context, req *connect.Request
 		Status: &statusmsg.StatusMessage{},
 	})
 
-	err = s.usecaseManager.GetSiteUseCase().DeleteSite(ctx, sitedto.DeleteSiteCommand{
+	rs, err := s.usecaseManager.GetSiteUseCase().DeleteSite(ctx, sitedto.DeleteSiteCommand{
 		Guid: req.Msg.GetGuid(),
 	})
 
@@ -42,8 +49,7 @@ func (s *authServerHandler) DeleteSite(ctx context.Context, req *connect.Request
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
-
-	res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
+	res.Msg.Status = rs.StatusMessage
 	return res, nil
 }
 
@@ -99,7 +105,7 @@ func (s *authServerHandler) UpdateSite(ctx context.Context, req *connect.Request
 		Status: &statusmsg.StatusMessage{},
 	})
 
-	err = s.usecaseManager.GetSiteUseCase().UpdateSite(ctx, sitedto.UpdateSiteCommand{
+	rs, err := s.usecaseManager.GetSiteUseCase().UpdateSite(ctx, sitedto.UpdateSiteCommand{
 		Name: req.Msg.GetName(),
 		Guid: req.Msg.GetGuid(),
 	})
@@ -108,7 +114,6 @@ func (s *authServerHandler) UpdateSite(ctx context.Context, req *connect.Request
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
 	}
-
-	res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
+	res.Msg.Status = rs.StatusMessage
 	return res, nil
 }

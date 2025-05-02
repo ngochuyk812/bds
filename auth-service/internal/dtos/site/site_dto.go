@@ -1,24 +1,29 @@
 package sitedto
 
+import "github.com/ngochuyk812/proto-bds/gen/statusmsg/v1"
+
 type CreateSiteCommand struct {
 	Name   string `json:"name" validate:"required"`
-	SiteId string `json:"site_id" validate:"required"`
+	SiteId string `json:"site_id" validate:"required,min=10"`
 }
 
 type CreateSiteCommandResponse struct {
-	Guid   string `json:"guid"`
-	Name   string `json:"name"`
-	ID     int64  `json:"id"`
-	SiteId string `json:"site_id"`
+	*statusmsg.StatusMessage
 }
 
 type UpdateSiteCommand struct {
 	Name string `json:"name" validate:"required"`
 	Guid string `json:"guid" validate:"required"`
 }
+type UpdateSiteCommandResponse struct {
+	*statusmsg.StatusMessage
+}
 
 type DeleteSiteCommand struct {
 	Guid string `json:"guid" validate:"required"`
+}
+type DeleteSiteCommandResponse struct {
+	*statusmsg.StatusMessage
 }
 
 type FetchSitesQuery struct {

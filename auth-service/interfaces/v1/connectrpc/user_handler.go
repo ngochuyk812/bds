@@ -2,6 +2,7 @@ package connectrpc
 
 import (
 	userdto "auth_service/internal/dtos/user"
+	"auth_service/internal/infra/global"
 	"context"
 
 	"connectrpc.com/connect"
@@ -51,13 +52,20 @@ func (s *authServerHandler) UpdateProfile(ctx context.Context, req *connect.Requ
 	res := connect.NewResponse(&authv1.UpdateProfileResponse{
 		Status: &statusmsg.StatusMessage{},
 	})
-
-	result, err := s.usecaseManager.GetUserUsecase().UpdateProfile(ctx, userdto.UpdateProfileCommand{
+	dto := userdto.UpdateProfileCommand{
 		FirstName: req.Msg.GetFirstName(),
 		LastName:  req.Msg.GetLastName(),
 		Phone:     req.Msg.GetPhone(),
 		Address:   req.Msg.GetAddress(),
-	})
+	}
+
+	if err := global.Validate.Struct(dto); err != nil {
+		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.Msg.Status.Extras = []string{err.Error()}
+		return res, nil
+	}
+
+	result, err := s.usecaseManager.GetUserUsecase().UpdateProfile(ctx, dto)
 	if err != nil {
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
