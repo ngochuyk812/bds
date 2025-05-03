@@ -2,7 +2,9 @@ package connectrpc
 
 import (
 	"net/http"
+	"property_service/internal/config"
 	"property_service/internal/infra"
+	"property_service/internal/infra/global"
 
 	"connectrpc.com/connect"
 	"github.com/ngochuyk812/building_block/interceptors"
@@ -21,8 +23,8 @@ func NewPropertyServer(cabin infra.Cabin) (pattern string, handler http.Handler)
 	}
 	path, handler := propertyv1connect.NewPropertyServiceHandler(impl,
 		connect.WithInterceptors(
-			interceptors.NewAuthInterceptor(cabin.GetInfra().GetConfig().SecretKey, cabin.GetInfra().GetConfig().PoliciesPath),
-			interceptors.NewLoggingInterceptor(cabin.GetInfra().GetLogger()),
+			interceptors.NewAuthInterceptor(config.SecretKey, &global.PoliciesPath),
+			interceptors.NewLoggingInterceptor(),
 		),
 		connect.WithIdempotency(connect.IdempotencyIdempotent),
 	)

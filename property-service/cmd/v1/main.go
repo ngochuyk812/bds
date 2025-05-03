@@ -15,20 +15,17 @@ import (
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	infrastructurecore "github.com/ngochuyk812/building_block/infrastructure/core"
-	configinfra "github.com/ngochuyk812/building_block/pkg/config"
+	"github.com/ngochuyk812/building_block/infrastructure/logger"
 )
 
 func main() {
 	ctx := context.Background()
 
-	config := config.NewConfig()
-	configInfra := configinfra.NewConfigEnv()
+	infrast := infrastructurecore.NewInfra()
 
-	infrast := infrastructurecore.NewInfra(configInfra)
-
-	client := db.NewMongoClient(ctx, config.DbConnection)
+	client := db.NewMongoClient(ctx, config.DbConnect)
 	defer client.Disconnect(ctx)
-	uow := db.NewUnitOfWork(client, config.DBName)
+	uow := db.NewUnitOfWork(client, config.DbName)
 
 	cabin := infra.NewCabin(infrast, uow)
 
@@ -38,7 +35,7 @@ func main() {
 	mux.Handle(path, handler)
 
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%s", configInfra.Port),
+		Addr:    fmt.Sprintf(":%s", config.Port),
 		Handler: mux,
 	}
 
@@ -46,9 +43,9 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		infrast.GetLogger().Info(fmt.Sprintf("Starting server on: %s", configInfra.Port))
+		logger.Info(fmt.Sprintf("Starting server on: %s", config.Port))
 		if err := server.ListenAndServe(); err != nil {
-			infrast.GetLogger().Error(fmt.Sprintf("Error starting server: %s", err))
+			logger.Error(fmt.Sprintf("Error starting server: %s", err))
 		}
 	}()
 
@@ -59,7 +56,7 @@ func main() {
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		infrast.GetLogger().Error(fmt.Sprintf("Error shutting down server: %v", err))
+		logger.Error(fmt.Sprintf("Error shutting down server: %v", err))
 	}
 
 }
