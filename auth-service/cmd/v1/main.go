@@ -5,8 +5,12 @@ import (
 	"auth_service/internal/infra"
 	"auth_service/internal/infra/database"
 	"auth_service/internal/usecase"
+	"context"
+	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
+	"time"
 
 	"auth_service/internal/repository"
 	"fmt"
@@ -22,6 +26,7 @@ var (
 	topic     = os.Getenv("TOPIC_EVENTBUS")
 	dbConnect = os.Getenv("DB_CONNECTION")
 	dbName    = os.Getenv("DB_NAME")
+	port      = os.Getenv("SERVER_PORT")
 )
 
 func main() {
@@ -30,24 +35,44 @@ func main() {
 	}
 	config := config.NewConfigEnv()
 	config.PoliciesPath = policiesPath
-	infa := infrastructurecore.NewInfra(config)
-	// infa.InjectCache(config.RedisConnect, config.RedisPass)
-	// infa.InjectEventbus(brokers, topic)
+	infrast := infrastructurecore.NewInfra(config)
+	infrast.InjectCache(config.RedisConnect, config.RedisPass)
+	infrast.InjectEventbus(brokers, topic)
 
 	db := database.NewSQLDB(dbConnect, dbName)
 	unf := repository.NewUnitOfWork(db)
 
-	cabin := infra.NewCabin(infa, unf)
+	cabin := infra.NewCabin(infrast, unf)
 	useCases := usecase.NewUsecaseManager(cabin)
 
-	app := infrastructurecore.NewServe(":"+config.Port, infa.GetLogger())
 	path, handler := connectrpc.NewAuthServer(useCases, cabin)
-	app.Mux.Handle(path, handler)
+
+	mux := http.NewServeMux()
+	mux.Handle(path, handler)
+
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%s", port),
+		Handler: mux,
+	}
 
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go app.Run()
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		infrast.GetLogger().Info(fmt.Sprintf("Starting server on: %s", port))
+		if err := server.ListenAndServe(); err != nil {
+			infrast.GetLogger().Error(fmt.Sprintf("Error starting server: %s", err))
+		}
+	}()
+
 	<-c
-	fmt.Println("shutting down...")
+	fmt.Println("Shutting down...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		infrast.GetLogger().Error(fmt.Sprintf("Error shutting down server: %v", err))
+	}
 
 }

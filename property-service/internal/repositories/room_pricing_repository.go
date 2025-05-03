@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"sender_service/internal/entities"
+	"property_service/internal/entities"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -10,18 +10,18 @@ type RoomPricingRepositoryInterface interface {
 	GetBaseRepo() *Repository[entities.RoomPricing]
 }
 
-type RoomPricingRepository struct {
+type roomPricingRepository struct {
 	base *Repository[entities.RoomPricing]
 }
 
 func NewRoomPricingRepository(collection *mongo.Collection) RoomPricingRepositoryInterface {
-	return &RoomPricingRepository{
+	return &roomPricingRepository{
 		base: &Repository[entities.RoomPricing]{
 			collection: collection,
 		},
 	}
 }
 
-func (r *RoomPricingRepository) GetBaseRepo() *Repository[entities.RoomPricing] {
+func (r *roomPricingRepository) GetBaseRepo() *Repository[entities.RoomPricing] {
 	return r.base
 }

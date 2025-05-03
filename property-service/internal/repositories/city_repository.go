@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"sender_service/internal/entities"
+	"property_service/internal/entities"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -10,18 +10,18 @@ type CityRepositoryInterface interface {
 	GetBaseRepo() *Repository[entities.City]
 }
 
-type CityRepository struct {
+type cityRepository struct {
 	base *Repository[entities.City]
 }
 
 func NewCityRepository(collection *mongo.Collection) CityRepositoryInterface {
-	return &CityRepository{
+	return &cityRepository{
 		base: &Repository[entities.City]{
 			collection: collection,
 		},
 	}
 }
 
-func (r *CityRepository) GetBaseRepo() *Repository[entities.City] {
+func (r *cityRepository) GetBaseRepo() *Repository[entities.City] {
 	return r.base
 }

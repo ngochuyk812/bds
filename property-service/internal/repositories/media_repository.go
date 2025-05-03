@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"sender_service/internal/entities"
+	"property_service/internal/entities"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -10,18 +10,18 @@ type MediaRepositoryInterface interface {
 	GetBaseRepo() *Repository[entities.Media]
 }
 
-type MediaRepository struct {
+type mediaRepository struct {
 	base *Repository[entities.Media]
 }
 
 func NewMediaRepository(collection *mongo.Collection) MediaRepositoryInterface {
-	return &MediaRepository{
+	return &mediaRepository{
 		base: &Repository[entities.Media]{
 			collection: collection,
 		},
 	}
 }
 
-func (r *MediaRepository) GetBaseRepo() *Repository[entities.Media] {
+func (r *mediaRepository) GetBaseRepo() *Repository[entities.Media] {
 	return r.base
 }

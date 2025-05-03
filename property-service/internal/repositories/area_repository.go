@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"sender_service/internal/entities"
+	"property_service/internal/entities"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -10,18 +10,18 @@ type AreaRepositoryInterface interface {
 	GetBaseRepo() *Repository[entities.Area]
 }
 
-type AreaRepository struct {
+type areaRepository struct {
 	base *Repository[entities.Area]
 }
 
 func NewAreaRepository(collection *mongo.Collection) AreaRepositoryInterface {
-	return &AreaRepository{
+	return &areaRepository{
 		base: &Repository[entities.Area]{
 			collection: collection,
 		},
 	}
 }
 
-func (r *AreaRepository) GetBaseRepo() *Repository[entities.Area] {
+func (r *areaRepository) GetBaseRepo() *Repository[entities.Area] {
 	return r.base
 }
