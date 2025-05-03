@@ -27,6 +27,7 @@ require (
 	golang.org/x/sync v0.13.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20250428153025-10db94c68c34 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )
 
@@ -36,6 +37,6 @@ require (
 	github.com/gofrs/uuid/v5 v5.3.2
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/ngochuyk812/building_block v0.1.26
-	github.com/ngochuyk812/proto-bds v1.1.18
+	github.com/ngochuyk812/proto-bds v1.1.21
 	go.mongodb.org/mongo-driver v1.17.3
 )

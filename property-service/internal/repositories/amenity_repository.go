@@ -2,7 +2,9 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"property_service/internal/entities"
+	db_helper "property_service/internal/infra/db/helpers"
 
 	"github.com/ngochuyk812/building_block/pkg/dtos"
 	"go.mongodb.org/mongo-driver/bson"
@@ -34,8 +36,13 @@ func (r *amenityRepository) GetBaseRepo() Repository[entities.Amenity] {
 
 func (r *amenityRepository) GetByName(ctx context.Context, name string) (*entities.Amenity, error) {
 	var result entities.Amenity
-	err := r.collection.FindOne(ctx, entities.Amenity{Name: name}).Decode(&result)
+	filter := db_helper.BuildFilter(ctx, bson.M{"name": name})
+	err := r.collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, nil
+		}
+
 		return nil, err
 	}
 	return &result, nil
@@ -47,6 +54,7 @@ func (r *amenityRepository) GetAmenitiesPaging(ctx context.Context, name string,
 	if name != "" {
 		filter["name"] = bson.M{"$regex": name, "$options": "i"}
 	}
+	filter = db_helper.BuildFilter(ctx, filter)
 
 	totalCount, err := r.collection.CountDocuments(ctx, filter)
 	if err != nil {

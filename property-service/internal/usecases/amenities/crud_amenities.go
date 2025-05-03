@@ -15,10 +15,10 @@ type crudAmenityUseCase struct {
 }
 
 type CrudAmenityUseCase interface {
-	CreateAmenity(ctx context.Context, req amenitydto.CreateAmenityCommand) (*amenitydto.CreateAmenityCommandResponse, error)
-	UpdateAmenity(ctx context.Context, req amenitydto.UpdateAmenityCommand) (*amenitydto.UpdateAmenityCommandResponse, error)
-	DeleteAmenity(ctx context.Context, req amenitydto.DeleteAmenityCommand) (*amenitydto.DeleteAmenityCommandResponse, error)
-	GetAmenitiesPaging(ctx context.Context, req amenitydto.FetchAmenitiesQuery) (*amenitydto.FetchAmenitiesResponse, error)
+	CreateAmenity(ctx context.Context, req amenitydto.CreateAmenityRequest) (*amenitydto.CreateAmenityResponse, error)
+	UpdateAmenity(ctx context.Context, req amenitydto.UpdateAmenityRequest) (*amenitydto.UpdateAmenityResponse, error)
+	DeleteAmenity(ctx context.Context, req amenitydto.DeleteAmenityRequest) (*amenitydto.DeleteAmenityResponse, error)
+	GetAmenitiesPaging(ctx context.Context, req amenitydto.FetchAmenitiesRequest) (*amenitydto.FetchAmenitiesResponse, error)
 }
 
 func NewCrudsAmenityUseCase(cabin infra.Cabin) CrudAmenityUseCase {
@@ -27,8 +27,8 @@ func NewCrudsAmenityUseCase(cabin infra.Cabin) CrudAmenityUseCase {
 	}
 }
 
-func (s *crudAmenityUseCase) CreateAmenity(ctx context.Context, req amenitydto.CreateAmenityCommand) (*amenitydto.CreateAmenityCommandResponse, error) {
-	res := &amenitydto.CreateAmenityCommandResponse{
+func (s *crudAmenityUseCase) CreateAmenity(ctx context.Context, req amenitydto.CreateAmenityRequest) (*amenitydto.CreateAmenityResponse, error) {
+	res := &amenitydto.CreateAmenityResponse{
 		StatusMessage: &statusmsg.StatusMessage{},
 	}
 
@@ -58,8 +58,8 @@ func (s *crudAmenityUseCase) CreateAmenity(ctx context.Context, req amenitydto.C
 	return res, nil
 }
 
-func (s *crudAmenityUseCase) UpdateAmenity(ctx context.Context, req amenitydto.UpdateAmenityCommand) (*amenitydto.UpdateAmenityCommandResponse, error) {
-	res := &amenitydto.UpdateAmenityCommandResponse{
+func (s *crudAmenityUseCase) UpdateAmenity(ctx context.Context, req amenitydto.UpdateAmenityRequest) (*amenitydto.UpdateAmenityResponse, error) {
+	res := &amenitydto.UpdateAmenityResponse{
 		StatusMessage: &statusmsg.StatusMessage{},
 	}
 
@@ -84,8 +84,8 @@ func (s *crudAmenityUseCase) UpdateAmenity(ctx context.Context, req amenitydto.U
 
 }
 
-func (s *crudAmenityUseCase) DeleteAmenity(ctx context.Context, req amenitydto.DeleteAmenityCommand) (*amenitydto.DeleteAmenityCommandResponse, error) {
-	res := &amenitydto.DeleteAmenityCommandResponse{
+func (s *crudAmenityUseCase) DeleteAmenity(ctx context.Context, req amenitydto.DeleteAmenityRequest) (*amenitydto.DeleteAmenityResponse, error) {
+	res := &amenitydto.DeleteAmenityResponse{
 		StatusMessage: &statusmsg.StatusMessage{},
 	}
 	err := s.Cabin.GetUnitOfWork().GetAmenityRepository().GetBaseRepo().DeleteByGuid(ctx, req.Guid)
@@ -97,7 +97,7 @@ func (s *crudAmenityUseCase) DeleteAmenity(ctx context.Context, req amenitydto.D
 	return res, nil
 }
 
-func (s *crudAmenityUseCase) GetAmenitiesPaging(ctx context.Context, req amenitydto.FetchAmenitiesQuery) (*amenitydto.FetchAmenitiesResponse, error) {
+func (s *crudAmenityUseCase) GetAmenitiesPaging(ctx context.Context, req amenitydto.FetchAmenitiesRequest) (*amenitydto.FetchAmenitiesResponse, error) {
 	paging, err := s.Cabin.GetUnitOfWork().GetAmenityRepository().GetAmenitiesPaging(ctx, "", req.Page, req.PageSize)
 	if err != nil {
 		return nil, err

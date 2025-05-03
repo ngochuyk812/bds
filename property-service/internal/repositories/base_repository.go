@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	db_helper "property_service/internal/infra/db/helpers"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -64,9 +65,10 @@ func (r *repository[T]) GetByID(ctx context.Context, id string) (*T, error) {
 	}
 
 	var result T
-	err = r.collection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&result)
+	filter := db_helper.BuildFilter(ctx, bson.M{"_id": objectID})
+	err = r.collection.FindOne(ctx, filter).Decode(&result)
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		return nil, err
+		return nil, nil
 	}
 
 	return &result, err
@@ -87,7 +89,8 @@ func (r *repository[T]) Update(ctx context.Context, id string, updateDoc *T) (*T
 		return nil, fmt.Errorf("failed to unmarshal update document: %w", err)
 	}
 	updateDocMap["updated_at"] = time.Now().Unix()
-	filter := bson.M{"_id": objectID}
+	filter := db_helper.BuildFilter(ctx, bson.M{"_id": objectID})
+
 	update := bson.M{"$set": updateDocMap}
 
 	result, err := r.collection.UpdateOne(ctx, filter, update)
@@ -103,6 +106,7 @@ func (r *repository[T]) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		return errors.New(ErrIdInvalid)
 	}
+
 	update := bson.M{"$set": bson.M{"deleted_at": time.Now().Unix()}}
 	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectID}, update)
 	if err != nil {
@@ -113,16 +117,18 @@ func (r *repository[T]) Delete(ctx context.Context, id string) error {
 
 func (r *repository[T]) GetByGuid(ctx context.Context, guid string) (*T, error) {
 	var result T
-	err := r.collection.FindOne(ctx, bson.M{"guid": guid}).Decode(&result)
+	filter := db_helper.BuildFilter(ctx, bson.M{"guid": guid})
+
+	err := r.collection.FindOne(ctx, filter).Decode(&result)
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		return nil, err
+		return nil, nil
 	}
 
 	return &result, err
 }
 
 func (r *repository[T]) UpdateByGuid(ctx context.Context, guid string, updateDoc *T) (*T, error) {
-	filter := bson.M{"guid": guid}
+	filter := db_helper.BuildFilter(ctx, bson.M{"guid": guid})
 	updateDocMap := bson.M{}
 
 	data, err := bson.Marshal(updateDoc)
