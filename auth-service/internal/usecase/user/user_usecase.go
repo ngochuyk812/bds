@@ -1,6 +1,7 @@
 package userusecase
 
 import (
+	"auth_service/internal/config"
 	userdto "auth_service/internal/dtos/user"
 	"auth_service/internal/entities"
 	"auth_service/internal/eventbus/events"
@@ -160,7 +161,7 @@ func (s *userService) Login(ctx context.Context, req userdto.LoginCommand) (*use
 		Roles:      []string{"user"},
 		UserName:   exist.Email,
 		Email:      exist.Email,
-	}, s.Cabin.GetInfra().GetConfig().SecretKey, 1*time.Hour)
+	}, config.SecretKey, 1*time.Hour)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
@@ -170,7 +171,7 @@ func (s *userService) Login(ctx context.Context, req userdto.LoginCommand) (*use
 	refreshToken, err := auth_context.GenerateJWT(&auth_context.ClaimModel{
 		IdSite:     exist.SiteId,
 		IdAuthUser: exist.Guid,
-	}, s.Cabin.GetInfra().GetConfig().SecretKey+"_REFRESH_TOKEN", ttlRefreshToken)
+	}, config.SecretKey+"_REFRESH_TOKEN", ttlRefreshToken)
 
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
@@ -346,7 +347,7 @@ func (s *userService) RefreshToken(ctx context.Context, req userdto.RefreshToken
 
 	cache := s.Cabin.GetInfra().GetCache()
 
-	claims, err := auth_context.VerifyJWT(req.RefreshToken, s.Cabin.GetInfra().GetConfig().SecretKey+"_REFRESH_TOKEN")
+	claims, err := auth_context.VerifyJWT(req.RefreshToken, config.SecretKey+"_REFRESH_TOKEN")
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_REFRESH_TOKEN_INVALID
 		return res, err
@@ -372,7 +373,7 @@ func (s *userService) RefreshToken(ctx context.Context, req userdto.RefreshToken
 		Roles:      []string{"user"},
 		UserName:   exist.Email,
 		Email:      exist.Email,
-	}, s.Cabin.GetInfra().GetConfig().SecretKey, 1*time.Hour)
+	}, config.SecretKey, 1*time.Hour)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
@@ -382,7 +383,7 @@ func (s *userService) RefreshToken(ctx context.Context, req userdto.RefreshToken
 	refreshToken, err := auth_context.GenerateJWT(&auth_context.ClaimModel{
 		IdSite:     exist.SiteId,
 		IdAuthUser: exist.Guid,
-	}, s.Cabin.GetInfra().GetConfig().SecretKey+"_REFRESH_TOKEN", ttlRefreshToken)
+	}, config.SecretKey+"_REFRESH_TOKEN", ttlRefreshToken)
 
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED

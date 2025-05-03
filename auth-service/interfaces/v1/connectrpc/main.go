@@ -1,7 +1,9 @@
 package connectrpc
 
 import (
+	"auth_service/internal/config"
 	"auth_service/internal/infra"
+	"auth_service/internal/infra/global"
 	"auth_service/internal/usecase"
 	"net/http"
 
@@ -24,8 +26,8 @@ func NewAuthServer(usecaseManager usecase.UsecaseManager, cabin infra.Cabin) (pa
 	}
 	path, handler := authv1connect.NewAuthServiceHandler(impl,
 		connect.WithInterceptors(
-			interceptors.NewAuthInterceptor(cabin.GetInfra().GetConfig().SecretKey, cabin.GetInfra().GetConfig().PoliciesPath),
-			interceptors.NewLoggingInterceptor(cabin.GetInfra().GetLogger()),
+			interceptors.NewAuthInterceptor(config.SecretKey, &global.PoliciesPath),
+			interceptors.NewLoggingInterceptor(),
 		),
 		connect.WithIdempotency(connect.IdempotencyIdempotent),
 	)

@@ -16,6 +16,7 @@ import (
 	"fmt"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/ngochuyk812/building_block/infrastructure/logger"
 
 	infrastructurecore "github.com/ngochuyk812/building_block/infrastructure/core"
 	"github.com/ngochuyk812/building_block/pkg/config"
@@ -35,7 +36,7 @@ func main() {
 	}
 	config := config.NewConfigEnv()
 	config.PoliciesPath = policiesPath
-	infrast := infrastructurecore.NewInfra(config)
+	infrast := infrastructurecore.NewInfra()
 	infrast.InjectCache(config.RedisConnect, config.RedisPass)
 	infrast.InjectEventbus(brokers, topic)
 
@@ -59,9 +60,9 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		infrast.GetLogger().Info(fmt.Sprintf("Starting server on: %s", port))
+		logger.Info(fmt.Sprintf("Starting server on: %s", port))
 		if err := server.ListenAndServe(); err != nil {
-			infrast.GetLogger().Error(fmt.Sprintf("Error starting server: %s", err))
+			logger.Error(fmt.Sprintf("Error starting server: %s", err))
 		}
 	}()
 
@@ -72,7 +73,7 @@ func main() {
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		infrast.GetLogger().Error(fmt.Sprintf("Error shutting down server: %v", err))
+		logger.Error(fmt.Sprintf("Error shutting down server: %v", err))
 	}
 
 }
