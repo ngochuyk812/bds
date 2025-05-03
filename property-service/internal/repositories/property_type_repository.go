@@ -7,21 +7,19 @@ import (
 )
 
 type PropertyTypeRepositoryInterface interface {
-	GetBaseRepo() *Repository[entities.PropertyType]
+	GetBaseRepo() Repository[entities.PropertyType]
 }
 
 type propertyTypeRepository struct {
-	base *Repository[entities.PropertyType]
+	base Repository[entities.PropertyType]
 }
 
 func NewPropertyTypeRepository(collection *mongo.Collection) PropertyTypeRepositoryInterface {
 	return &propertyTypeRepository{
-		base: &Repository[entities.PropertyType]{
-			collection: collection,
-		},
+		base: NewRepository[entities.PropertyType](collection),
 	}
 }
 
-func (r *propertyTypeRepository) GetBaseRepo() *Repository[entities.PropertyType] {
+func (r *propertyTypeRepository) GetBaseRepo() Repository[entities.PropertyType] {
 	return r.base
 }

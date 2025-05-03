@@ -7,21 +7,19 @@ import (
 )
 
 type CityRepositoryInterface interface {
-	GetBaseRepo() *Repository[entities.City]
+	GetBaseRepo() Repository[entities.City]
 }
 
 type cityRepository struct {
-	base *Repository[entities.City]
+	base Repository[entities.City]
 }
 
 func NewCityRepository(collection *mongo.Collection) CityRepositoryInterface {
 	return &cityRepository{
-		base: &Repository[entities.City]{
-			collection: collection,
-		},
+		base: NewRepository[entities.City](collection),
 	}
 }
 
-func (r *cityRepository) GetBaseRepo() *Repository[entities.City] {
+func (r *cityRepository) GetBaseRepo() Repository[entities.City] {
 	return r.base
 }

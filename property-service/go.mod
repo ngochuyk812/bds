@@ -33,6 +33,7 @@ require (
 require (
 	connectrpc.com/connect v1.18.1
 	github.com/go-playground/validator/v10 v10.26.0
+	github.com/gofrs/uuid/v5 v5.3.2
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/ngochuyk812/building_block v0.1.26
 	github.com/ngochuyk812/proto-bds v1.1.18

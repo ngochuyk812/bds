@@ -7,21 +7,19 @@ import (
 )
 
 type CategoryRepositoryInterface interface {
-	GetBaseRepo() *Repository[entities.Category]
+	GetBaseRepo() Repository[entities.Category]
 }
 
 type categoryRepository struct {
-	base *Repository[entities.Category]
+	base Repository[entities.Category]
 }
 
 func NewCategoryRepository(collection *mongo.Collection) CategoryRepositoryInterface {
 	return &categoryRepository{
-		base: &Repository[entities.Category]{
-			collection: collection,
-		},
+		base: NewRepository[entities.Category](collection),
 	}
 }
 
-func (r *categoryRepository) GetBaseRepo() *Repository[entities.Category] {
+func (r *categoryRepository) GetBaseRepo() Repository[entities.Category] {
 	return r.base
 }

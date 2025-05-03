@@ -7,21 +7,19 @@ import (
 )
 
 type MediaRepositoryInterface interface {
-	GetBaseRepo() *Repository[entities.Media]
+	GetBaseRepo() Repository[entities.Media]
 }
 
 type mediaRepository struct {
-	base *Repository[entities.Media]
+	base Repository[entities.Media]
 }
 
 func NewMediaRepository(collection *mongo.Collection) MediaRepositoryInterface {
 	return &mediaRepository{
-		base: &Repository[entities.Media]{
-			collection: collection,
-		},
+		base: NewRepository[entities.Media](collection),
 	}
 }
 
-func (r *mediaRepository) GetBaseRepo() *Repository[entities.Media] {
+func (r *mediaRepository) GetBaseRepo() Repository[entities.Media] {
 	return r.base
 }

@@ -7,21 +7,19 @@ import (
 )
 
 type RoomTypeRepositoryInterface interface {
-	GetBaseRepo() *Repository[entities.RoomType]
+	GetBaseRepo() Repository[entities.RoomType]
 }
 
 type roomTypeRepository struct {
-	base *Repository[entities.RoomType]
+	base Repository[entities.RoomType]
 }
 
 func NewRoomTypeRepository(collection *mongo.Collection) RoomTypeRepositoryInterface {
 	return &roomTypeRepository{
-		base: &Repository[entities.RoomType]{
-			collection: collection,
-		},
+		base: NewRepository[entities.RoomType](collection),
 	}
 }
 
-func (r *roomTypeRepository) GetBaseRepo() *Repository[entities.RoomType] {
+func (r *roomTypeRepository) GetBaseRepo() Repository[entities.RoomType] {
 	return r.base
 }

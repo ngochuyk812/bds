@@ -10,6 +10,7 @@ import (
 	"property_service/internal/config"
 	"property_service/internal/infra"
 	"property_service/internal/infra/db"
+	"property_service/internal/usecases"
 	"syscall"
 	"time"
 
@@ -28,10 +29,11 @@ func main() {
 	uow := db.NewUnitOfWork(client, config.DbName)
 
 	cabin := infra.NewCabin(infrast, uow)
+	usecases := usecases.NewUsecaseManager(cabin)
 
 	mux := http.NewServeMux()
 
-	path, handler := connectrpc.NewPropertyServer(cabin)
+	path, handler := connectrpc.NewPropertyServer(cabin, usecases)
 	mux.Handle(path, handler)
 
 	server := &http.Server{

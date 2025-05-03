@@ -7,21 +7,19 @@ import (
 )
 
 type RoomPricingRepositoryInterface interface {
-	GetBaseRepo() *Repository[entities.RoomPricing]
+	GetBaseRepo() Repository[entities.RoomPricing]
 }
 
 type roomPricingRepository struct {
-	base *Repository[entities.RoomPricing]
+	base Repository[entities.RoomPricing]
 }
 
 func NewRoomPricingRepository(collection *mongo.Collection) RoomPricingRepositoryInterface {
 	return &roomPricingRepository{
-		base: &Repository[entities.RoomPricing]{
-			collection: collection,
-		},
+		base: NewRepository[entities.RoomPricing](collection),
 	}
 }
 
-func (r *roomPricingRepository) GetBaseRepo() *Repository[entities.RoomPricing] {
+func (r *roomPricingRepository) GetBaseRepo() Repository[entities.RoomPricing] {
 	return r.base
 }

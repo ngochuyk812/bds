@@ -8,7 +8,7 @@ import (
 )
 
 // CreateProperty implements propertyv1connect.PropertyServiceHandler.
-func (p *propertyServerHandler) CreateProperty(context.Context, *connect.Request[propertyv1.CreatePropertyRequest]) (*connect.Response[propertyv1.CreatePropertyResponse], error) {
+func (p *propertyServerHandler) CreateProperty(ctx context.Context, req *connect.Request[propertyv1.CreatePropertyRequest]) (*connect.Response[propertyv1.CreatePropertyResponse], error) {
 	panic("unimplemented")
 }
 

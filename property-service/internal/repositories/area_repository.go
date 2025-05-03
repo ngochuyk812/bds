@@ -7,21 +7,19 @@ import (
 )
 
 type AreaRepositoryInterface interface {
-	GetBaseRepo() *Repository[entities.Area]
+	GetBaseRepo() Repository[entities.Area]
 }
 
 type areaRepository struct {
-	base *Repository[entities.Area]
+	base Repository[entities.Area]
 }
 
 func NewAreaRepository(collection *mongo.Collection) AreaRepositoryInterface {
 	return &areaRepository{
-		base: &Repository[entities.Area]{
-			collection: collection,
-		},
+		base: NewRepository[entities.Area](collection),
 	}
 }
 
-func (r *areaRepository) GetBaseRepo() *Repository[entities.Area] {
+func (r *areaRepository) GetBaseRepo() Repository[entities.Area] {
 	return r.base
 }
