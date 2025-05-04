@@ -1,7 +1,11 @@
-ipeline {
+@Library('deployK8s@develop')_
+@Library('buildDocker@develop')_
+
+
+pipeline {
     agent none
     environment{
-        DOCKER_NAME_IMAGE = "auth-service"
+        DOCKER_NAME_IMAGE = "bds/auth-service"
     }
     stages {
         stage('Set Environment') {
@@ -18,30 +22,24 @@ ipeline {
             agent any
 
             steps {
-                script {
-                    echo "Docker Tag: ${env.DOCKER_IMAGE}"
-                }
-                sh "docker build -t ${env.DOCKER_IMAGE} ."
-                withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
-                    sh "docker push ${env.DOCKER_IMAGE}"
-                }
-                sh "docker image rm ${env.DOCKER_IMAGE}"
+                buildDocker("${env.DOCKER_IMAGE}")
+                // script {
+                //     echo "Docker Tag: ${env.DOCKER_IMAGE}"
+                // }
+                // sh "docker build -t ${env.DOCKER_IMAGE} ."
+                // withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                //     sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
+                //     sh "docker push ${env.DOCKER_IMAGE}"
+                // }
+                // sh "docker image rm ${env.DOCKER_IMAGE}"
             }
         }
-     
-        stage('Clone Repository Template Deploy K8s') {
-            agent any
+        stage('Test') {
             steps {
-                script {
-                    withCredentials([string(credentialsId: 'GithubSecret', variable: 'TOKEN')]) {
-                        sh 'rm -rf devops'
-                        sh 'git clone https://${TOKEN}@github.com/ngochuyk812/devops.git'
-                        sh 'cd devops && ls -la'
-                    }
-                }
+                echo 'Testing..'
             }
         }
+        
         stage('Deploy') {
             agent any 
             
