@@ -13,7 +13,7 @@ pipeline {
                 script {
                     def branchName = env.GIT_BRANCH.replaceFirst(/^origin\//, '')
                     env.ENV_DEPLOY = (branchName == 'master') ? 'prod' : 'dev'
-                    env.DOCKER_IMAGE = "bds/${ENV_DEPLOY}-${SERVICE_NAME}:${BUILD_ID}"
+                    env.DOCKER_IMAGE = "ngochuyk8/${ENV_DEPLOY}-${SERVICE_NAME}:${BUILD_ID}"
                 }
             }
         }
