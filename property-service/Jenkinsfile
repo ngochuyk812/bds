@@ -1,5 +1,4 @@
-@Library('deployK8s@develop')_
-@Library('buildDocker@develop')_
+@Library('devops@develop')_
 
 
 pipeline {
