@@ -24,8 +24,10 @@ pipeline {
                 script {
                     echo "Docker Tag: ${env.DOCKER_IMAGE}"
                 }
-                sh "cd ${SERVICE_NAME}"
-                sh "docker build -t ${env.DOCKER_IMAGE} ."
+                sh """
+                    cd ${SERVICE_NAME}
+                    docker build -t ${env.DOCKER_IMAGE} .
+                """
                 withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
                     sh "docker push ${env.DOCKER_IMAGE}"
