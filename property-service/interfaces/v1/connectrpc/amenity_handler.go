@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"property_service/internal/config"
 	amenitydto "property_service/internal/dtos/amenity"
+	dtos "property_service/internal/dtos/shared"
 	"property_service/internal/infra"
 	"property_service/internal/infra/global"
 	"property_service/internal/usecases"
@@ -70,28 +71,37 @@ func (p *propertyServerHandler) DeleteAmenity(ctx context.Context, req *connect.
 	return res, nil
 }
 
-// FetchAmenities implements propertyv1connect.PropertyServiceHandler.
-func (p *propertyServerHandler) FetchAmenities(ctx context.Context, req *connect.Request[propertyv1.FetchAmenitiesRequest]) (res *connect.Response[propertyv1.FetchAmenitiesResponse], err error) {
-	res = connect.NewResponse(&propertyv1.FetchAmenitiesResponse{
+// SearchAdvanceAmenities implements propertyv1connect.PropertyServiceHandler.
+func (p *propertyServerHandler) SearchAdvanceAmenities(ctx context.Context, req *connect.Request[utilsv1.SearchAdvanceRequest]) (*connect.Response[propertyv1.SearchAdvanceAmenitiesResponse], error) {
+	res := connect.NewResponse(&propertyv1.SearchAdvanceAmenitiesResponse{
 		Status: &statusmsg.StatusMessage{},
 	})
-	dto := amenitydto.FetchAmenitiesRequest{
-		Page:     1,
-		PageSize: 10,
+	query := dtos.SearchAdvanceModel{
+		Filters: make(map[string]dtos.FilterModel),
 	}
-	result, err := p.useCases.GetAmenitiesUseCase().GetAmenitiesPaging(ctx, dto)
+
+	for _, filter := range req.Msg.GetFilters() {
+		query.Filters[filter.GetField()] = dtos.FilterModel{
+			Type:   filter.GetType(),
+			Filter: filter.GetFilter(),
+		}
+	}
+	for _, sort := range req.Msg.GetSort() {
+		query.Sort = append(query.Sort, dtos.SortModelItem{
+			ColId: sort.GetColId(),
+			Sort:  sort.GetSort(),
+		})
+	}
+	result, err := p.cabin.GetUnitOfWork().GetAmenityRepository().GetBaseRepo().SearchAdvance(context.Background(), query)
 	if err != nil {
-		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_INTERNAL_ERROR
+		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
 		return res, err
 	}
 	res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_SUCCESS
-	res.Msg.Pagination = &utilsv1.PaginationResponse{
-		PageSize: int64(dto.PageSize),
-		Total:    int64(result.Total),
-	}
-	res.Msg.Items = make([]*propertyv1.AmenityModel, len(result.Items))
-	for i, item := range result.Items {
-		res.Msg.Items[i] = &propertyv1.AmenityModel{
+	res.Msg.Total = int64(result.Total)
+	res.Msg.Rows = make([]*propertyv1.AmenityModel, len(result.Rows))
+	for i, item := range result.Rows {
+		res.Msg.Rows[i] = &propertyv1.AmenityModel{
 			Guid:        item.Guid,
 			Name:        item.Name,
 			Description: item.Description,
@@ -99,6 +109,7 @@ func (p *propertyServerHandler) FetchAmenities(ctx context.Context, req *connect
 		}
 	}
 	return res, nil
+
 }
 
 // UpdateAmenity implements propertyv1connect.PropertyServiceHandler.
@@ -126,6 +137,11 @@ func (p *propertyServerHandler) UpdateAmenity(ctx context.Context, req *connect.
 	res.Msg.Status.Extras = result.Extras
 	res.Msg.Status.Code = result.Code
 	return res, nil
+}
+
+// FetchAmenities implements propertyv1connect.PropertyServiceHandler.
+func (p *propertyServerHandler) FetchAmenities(context.Context, *connect.Request[propertyv1.FetchAmenitiesRequest]) (*connect.Response[propertyv1.FetchAmenitiesResponse], error) {
+	panic("unimplemented")
 }
 
 func NewPropertyServer(cabin infra.Cabin, useCases usecases.UsecaseManager) (pattern string, handler http.Handler) {

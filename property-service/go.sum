@@ -46,8 +46,8 @@ github.com/montanaflynn/stats v0.7.1 h1:etflOAAHORrCC44V+aR6Ftzort912ZU+YLiSTuV8
 github.com/montanaflynn/stats v0.7.1/go.mod h1:etXPPgVO6n31NxCd9KQUMvCM+ve0ruNzt6R8Bnaayow=
 github.com/ngochuyk812/building_block v0.1.26 h1:y96S6fSadNM7xZDFUkKonojvhJNK70a08vVux81+wso=
 github.com/ngochuyk812/building_block v0.1.26/go.mod h1:12nmsw+kc5MiECwlVxX7el/CKArRV5w7Rnw20cFKEUQ=
-github.com/ngochuyk812/proto-bds v1.1.21 h1:GpUK32l5PrzOSKnTs1FTFyGpBA6QWKBE39RL8C40nAk=
-github.com/ngochuyk812/proto-bds v1.1.21/go.mod h1:S9FqCA1Rgn7ZzBt9CAsL26tsH4b/MnkkQy3Y6rePw24=
+github.com/ngochuyk812/proto-bds v1.1.22 h1:u5BnegY4Eylp2Dnv2gfu0O51LGp+72yRkvV9gxCl0Lw=
+github.com/ngochuyk812/proto-bds v1.1.22/go.mod h1:/yx5U90oRADBGFf16wx+5b7L6nd6LoZzzHjAPjEq4CU=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=
 github.com/onsi/ginkgo v1.16.5 h1:8xi0RTUf59SOSfEtZMvwTvXYMzG4gV23XVHOZiXNtnE=
@@ -135,8 +135,6 @@ golang.org/x/tools v0.0.0-20191119224855-298f0cb1881e/go.mod h1:b+2E5dAYhXwXZwtn
 golang.org/x/tools v0.1.12/go.mod h1:hNGJHUnrk76NpqgfD5Aqm5Crs+Hm0VOH/i9J2+nxYbc=
 golang.org/x/tools v0.6.0/go.mod h1:Xwgl3UAJ/d3gWutnCtw505GrjyAbvKui8lOU390QaIU=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
-google.golang.org/genproto/googleapis/api v0.0.0-20250428153025-10db94c68c34 h1:0PeQib/pH3nB/5pEmFeVQJotzGohV0dq4Vcp09H5yhE=
-google.golang.org/genproto/googleapis/api v0.0.0-20250428153025-10db94c68c34/go.mod h1:0awUlEkap+Pb1UMeJwJQQAdJQrt3moU7J2moTy69irI=
 google.golang.org/protobuf v1.36.6 h1:z1NpPI8ku2WgiWnf+t9wTPsn6eP1L7ksHUlkfLvd9xY=
 google.golang.org/protobuf v1.36.6/go.mod h1:jduwjTPXsFjZGTmRluh+L6NjiWu7pchiJ2/5YcXBHnY=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
