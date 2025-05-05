@@ -14,7 +14,6 @@ FROM debian:bookworm-slim
 WORKDIR /app
 
 COPY --from=builder /app/main .
-COPY --from=builder /app/migration ./migration
 
 ENV SERVER_PORT=8080
 
