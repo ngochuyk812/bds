@@ -11,7 +11,7 @@ import (
 )
 
 func NewSQLDB(connectString string, dbName string) *gorm.DB {
-
+	print(connectString, dbName)
 	var entities = []interface{}{
 		&entities.Site{},
 		&entities.User{},
