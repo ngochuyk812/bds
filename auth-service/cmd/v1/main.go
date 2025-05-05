@@ -38,7 +38,7 @@ func main() {
 	config.PoliciesPath = policiesPath
 	infrast := infrastructurecore.NewInfra()
 	infrast.InjectCache(config.RedisConnect, config.RedisPass)
-	infrast.InjectEventbus(brokers, topic)
+	// infrast.InjectEventbus(brokers, topic)
 
 	db := database.NewSQLDB(dbConnect, dbName)
 	unf := repository.NewUnitOfWork(db)
