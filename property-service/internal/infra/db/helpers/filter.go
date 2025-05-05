@@ -12,6 +12,8 @@ func BuildFilter(ctx context.Context, customFilter bson.M) bson.M {
 	authContext, ok := helpers.AuthContext(ctx)
 	if ok {
 		merged["site_id"] = authContext.IdSite
+	} else {
+		merged["site_id"] = "-1"
 	}
 	for k, v := range customFilter {
 		merged[k] = v
