@@ -15,7 +15,5 @@ WORKDIR /app
 
 COPY --from=builder /app/main .
 
-ENV SERVER_PORT=8080
 EXPOSE $SERVER_PORT
-
 CMD ["./main"]

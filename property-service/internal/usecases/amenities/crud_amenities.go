@@ -74,6 +74,8 @@ func (s *crudAmenityUseCase) UpdateAmenity(ctx context.Context, req amenitydto.U
 		return res, nil
 	}
 	exist.Name = req.Name
+	exist.Description = req.Description
+	exist.Icon = req.Icon
 	_, err = s.Cabin.GetUnitOfWork().GetAmenityRepository().GetBaseRepo().UpdateByGuid(ctx, req.Guid, exist)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_INTERNAL_ERROR
