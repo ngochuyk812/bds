@@ -23,6 +23,8 @@ func NewBaseEntity(ctx context.Context) BaseEntity {
 	siteId := ""
 	if ok {
 		siteId = auth.IdSite
+	} else {
+		siteId = "-1"
 	}
 	guid, _ := uuid.NewV4()
 	now := time.Now().Unix()
