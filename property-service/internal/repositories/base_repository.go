@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	dtos "property_service/internal/dtos/shared"
 	db_helper "property_service/internal/infra/db/helpers"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var (
@@ -32,9 +34,47 @@ type Repository[T any] interface {
 	Delete(ctx context.Context, id string) error
 	UpdateByGuid(ctx context.Context, guid string, updateDoc *T) (*T, error)
 	DeleteByGuid(ctx context.Context, guid string) error
+	SearchAdvance(ctx context.Context, query dtos.SearchAdvanceModel) (*dtos.SearchAdvanceResponse[T], error)
 }
 type repository[T any] struct {
 	collection *mongo.Collection
+}
+
+func (r *repository[T]) SearchAdvance(ctx context.Context, query dtos.SearchAdvanceModel) (*dtos.SearchAdvanceResponse[T], error) {
+	res := &dtos.SearchAdvanceResponse[T]{}
+	filter := buildMongoFilter(query.Filters)
+	skip := int64(query.StartRow)
+	limit := int64(query.EndRow - query.StartRow)
+	sort := buildMongoSort(query.Sort)
+
+	opts := options.Find().SetSkip(skip).SetLimit(limit).SetSort(sort)
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var results []T
+	for cursor.Next(ctx) {
+		var item T
+		if err := cursor.Decode(&item); err != nil {
+			return nil, err
+		}
+		results = append(results, item)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	count, err := r.collection.CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	res.Rows = results
+	res.Total = int(count)
+	return res, nil
 }
 
 func (r *repository[T]) Create(ctx context.Context, doc *T) (*T, error) {
@@ -157,4 +197,40 @@ func (r *repository[T]) DeleteByGuid(ctx context.Context, guid string) error {
 		return fmt.Errorf("failed to update deleted_at: %w", err)
 	}
 	return nil
+}
+
+func buildMongoFilter(filters map[string]dtos.FilterModel) bson.M {
+	mongoFilter := db_helper.BuildFilter(context.Background(), bson.M{})
+
+	for field, cond := range filters {
+		switch cond.Type {
+		case "equals":
+			mongoFilter[field] = cond.Filter
+		case "contains":
+			mongoFilter[field] = bson.M{
+				"$regex":   cond.Filter,
+				"$options": "i",
+			}
+		case "greaterThan":
+			mongoFilter[field] = bson.M{"$gt": cond.Filter}
+		case "lessThan":
+			mongoFilter[field] = bson.M{"$lt": cond.Filter}
+		default:
+			continue
+		}
+	}
+
+	return mongoFilter
+}
+
+func buildMongoSort(sortModel []dtos.SortModelItem) bson.D {
+	sort := bson.D{}
+	for _, s := range sortModel {
+		order := 1
+		if s.Sort == "desc" {
+			order = -1
+		}
+		sort = append(sort, bson.E{Key: s.ColId, Value: order})
+	}
+	return sort
 }

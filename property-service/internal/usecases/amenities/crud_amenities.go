@@ -4,6 +4,7 @@ import (
 	"context"
 	"math"
 	amenitydto "property_service/internal/dtos/amenity"
+	dtos "property_service/internal/dtos/shared"
 	"property_service/internal/entities"
 	"property_service/internal/infra"
 
@@ -18,7 +19,7 @@ type CrudAmenityUseCase interface {
 	CreateAmenity(ctx context.Context, req amenitydto.CreateAmenityRequest) (*amenitydto.CreateAmenityResponse, error)
 	UpdateAmenity(ctx context.Context, req amenitydto.UpdateAmenityRequest) (*amenitydto.UpdateAmenityResponse, error)
 	DeleteAmenity(ctx context.Context, req amenitydto.DeleteAmenityRequest) (*amenitydto.DeleteAmenityResponse, error)
-	GetAmenitiesPaging(ctx context.Context, req amenitydto.FetchAmenitiesRequest) (*amenitydto.FetchAmenitiesResponse, error)
+	SearchAdvance(ctx context.Context, req dtos.SearchAdvanceModel) (*dtos.SearchAdvanceResponse[amenitydto.AmenityModel], error)
 }
 
 func NewCrudsAmenityUseCase(cabin infra.Cabin) CrudAmenityUseCase {
@@ -27,6 +28,29 @@ func NewCrudsAmenityUseCase(cabin infra.Cabin) CrudAmenityUseCase {
 	}
 }
 
+// SearchAdvance implements CrudAmenityUseCase.
+func (s *crudAmenityUseCase) SearchAdvance(ctx context.Context, req dtos.SearchAdvanceModel) (*dtos.SearchAdvanceResponse[amenitydto.AmenityModel], error) {
+	res := &dtos.SearchAdvanceResponse[amenitydto.AmenityModel]{}
+	paging, err := s.Cabin.GetUnitOfWork().GetAmenityRepository().GetBaseRepo().SearchAdvance(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if paging == nil {
+		return nil, ErrInvalidRequest
+	}
+
+	res.Rows = make([]amenitydto.AmenityModel, len(paging.Rows))
+	for i, item := range paging.Rows {
+		res.Rows[i] = amenitydto.AmenityModel{
+			Guid:        item.Guid,
+			Name:        item.Name,
+			Description: item.Description,
+			Icon:        item.Icon,
+		}
+	}
+	res.Total = paging.Total
+	return res, nil
+}
 func (s *crudAmenityUseCase) CreateAmenity(ctx context.Context, req amenitydto.CreateAmenityRequest) (*amenitydto.CreateAmenityResponse, error) {
 	res := &amenitydto.CreateAmenityResponse{
 		StatusMessage: &statusmsg.StatusMessage{},
@@ -49,7 +73,7 @@ func (s *crudAmenityUseCase) CreateAmenity(ctx context.Context, req amenitydto.C
 		Icon:        req.Icon,
 		BaseEntity:  entities.NewBaseEntity(ctx),
 	}
-	amenityEntity, err = s.Cabin.GetUnitOfWork().GetAmenityRepository().GetBaseRepo().Create(ctx, amenityEntity)
+	_, err = s.Cabin.GetUnitOfWork().GetAmenityRepository().GetBaseRepo().Create(ctx, amenityEntity)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
 		return res, err
