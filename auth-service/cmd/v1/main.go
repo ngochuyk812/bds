@@ -51,6 +51,11 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle(path, handler)
 
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
+
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%s", port),
 		Handler: mux,
