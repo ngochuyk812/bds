@@ -9,6 +9,8 @@ import (
 )
 
 func NewMongoClient(ctx context.Context, connection string) *mongo.Client {
+	println("Connecting to MongoDB...: " + connection)
+
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connection))
 	if err != nil {
 		panic(err)
