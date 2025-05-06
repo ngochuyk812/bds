@@ -8,6 +8,7 @@ import (
 	dtos "property_service/internal/dtos/shared"
 	"property_service/internal/infra"
 	"property_service/internal/infra/global"
+	interceptorsinternal "property_service/internal/infra/interceptors"
 	"property_service/internal/usecases"
 
 	"connectrpc.com/connect"
@@ -151,8 +152,9 @@ func NewPropertyServer(cabin infra.Cabin, useCases usecases.UsecaseManager) (pat
 	}
 	path, handler := propertyv1connect.NewPropertyServiceHandler(impl,
 		connect.WithInterceptors(
-			interceptors.NewAuthInterceptor(config.SecretKey, &global.PoliciesPath),
+			interceptorsinternal.RecovertInterceptor(),
 			interceptors.NewLoggingInterceptor(),
+			interceptors.NewAuthInterceptor(config.SecretKey, &global.PoliciesPath),
 		),
 		connect.WithIdempotency(connect.IdempotencyIdempotent),
 	)

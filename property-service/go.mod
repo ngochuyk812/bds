@@ -36,6 +36,6 @@ require (
 	github.com/gofrs/uuid/v5 v5.3.2
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/ngochuyk812/building_block v0.1.26
-	github.com/ngochuyk812/proto-bds v1.1.22
+	github.com/ngochuyk812/proto-bds v1.1.23
 	go.mongodb.org/mongo-driver v1.17.3
 )
