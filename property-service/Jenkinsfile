@@ -1,51 +1,16 @@
-@Library('devops@develop')_
-
+@Library('devops@develop') _
 
 pipeline {
-    agent none
-    environment{
+    agent any
+    environment {
         SERVICE_NAME = "property-service"
     }
     stages {
-        stage('Set Environment') {
-            agent any
+        stage('Build & Deploy') {
             steps {
                 script {
-                    def branchName = env.GIT_BRANCH.replaceFirst(/^origin\//, '')
-                    env.ENV_DEPLOY = (branchName == 'master') ? 'prod' : 'dev'
-                    env.DOCKER_IMAGE = "ngochuyk8/${ENV_DEPLOY}-${SERVICE_NAME}:${BUILD_ID}"
+                    buildHelper(env.SERVICE_NAME)
                 }
-            }
-        }
-        stage("Build") {
-            agent any
-
-            steps {
-                script {
-                    echo "Docker Tag: ${env.DOCKER_IMAGE}"
-                }
-                sh """
-                    cd ${SERVICE_NAME}
-                    docker build -t ${env.DOCKER_IMAGE} .
-                """
-                withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
-                    sh "docker push ${env.DOCKER_IMAGE}"
-                }
-                sh "docker image rm ${env.DOCKER_IMAGE}"
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Testing..'
-            }
-        }
-        
-        stage('Deploy') {
-            agent any 
-            
-            steps {
-                deployK8s("${SERVICE_NAME}", "${DOCKER_IMAGE}", "golang", "${env.ENV_DEPLOY}")
             }
         }
     }
