@@ -1,6 +1,17 @@
 @Library('devops@develop') _
 
-node {
-    def serviceName = "auth-service"
-    buildHelper(serviceName)
+pipeline {
+    agent any
+    environment {
+        SERVICE_NAME = "auth-service"
+    }
+    stages {
+        stage('Build & Deploy') {
+            steps {
+                script {
+                    buildHelper(env.SERVICE_NAME)
+                }
+            }
+        }
+    }
 }
