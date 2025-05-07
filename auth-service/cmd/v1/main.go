@@ -4,16 +4,15 @@ import (
 	"auth_service/interfaces/v1/connectrpc"
 	"auth_service/internal/infra"
 	"auth_service/internal/infra/database"
+	"auth_service/internal/repository"
 	"auth_service/internal/usecase"
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"auth_service/internal/repository"
-	"fmt"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/ngochuyk812/building_block/infrastructure/logger"
@@ -32,7 +31,7 @@ var (
 
 func main() {
 	policiesPath := &map[string][]string{
-		"/greet.v1.GreetService/Greet": {"user"},
+		// "/greet.v1.GreetService/Greet": {"user"},
 	}
 	config := config.NewConfigEnv()
 	config.PoliciesPath = policiesPath
