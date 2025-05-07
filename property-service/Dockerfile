@@ -18,3 +18,4 @@ COPY --from=builder /app/main .
 EXPOSE $SERVER_PORT
 CMD ["./main"]
 
+
