@@ -21,3 +21,4 @@ EXPOSE $SERVER_PORT
 
 CMD ["./main"]
 
+
