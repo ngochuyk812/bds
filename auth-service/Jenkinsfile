@@ -10,7 +10,7 @@ pipeline {
         stage('Set Environment') {
             agent any
             steps {
-                dockerBuild()
+                dockerHelper(name:"21231")
                 // script {
                 //     def branchName = env.GIT_BRANCH.replaceFirst(/^origin\//, '')
                 //     env.ENV_DEPLOY = (branchName == 'master') ? 'prod' : 'dev'
