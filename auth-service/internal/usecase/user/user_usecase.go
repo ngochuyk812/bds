@@ -328,6 +328,7 @@ func (s *userService) VerifySignUp(ctx context.Context, req userdto.VerifySignUp
 		return res, nil
 	}
 
+	exist.Active = true
 	err = s.Cabin.GetUnitOfWork().GetUserRepository().GetBaseRepository().Update(ctx, exist)
 
 	if err != nil {
