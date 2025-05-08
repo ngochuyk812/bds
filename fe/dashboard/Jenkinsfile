@@ -1,0 +1,17 @@
+@Library('devops@develop') _
+
+pipeline {
+    agent any
+    environment {
+        NAME = "dashboard"
+    }
+    stages {
+        stage('Build & Deploy') {
+            steps {
+                script {
+                    buildHelper(env.NAME, "react")
+                }
+            }
+        }
+    }
+}
