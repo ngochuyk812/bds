@@ -39,7 +39,7 @@ func (u *userRepository) GetUserByEmail(ctx context.Context, email string) (*ent
 
 	var user entities.User
 	err := u.db.WithContext(ctx).
-		Where("email = ? AND siteid = ?", email, authContext.IdSite).
+		Where("email = ? AND site_id = ?", email, authContext.IdSite).
 		First(&user).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {

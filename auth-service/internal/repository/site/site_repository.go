@@ -32,7 +32,7 @@ func (r *siteRepository) GetBaseRepository() repositorybase.Repository[entities.
 
 func (r *siteRepository) GetSiteBySiteId(ctx context.Context, siteId string) (*entities.Site, error) {
 	var site entities.Site
-	err := r.db.WithContext(ctx).Where("siteId = ? AND deleted_at IS NULL", siteId).First(&site).Error
+	err := r.db.WithContext(ctx).Where("site_id = ? AND deleted_at IS NULL", siteId).First(&site).Error
 	if err != nil {
 		return nil, err
 	}
