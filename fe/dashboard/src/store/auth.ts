@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage, PersistOptions } from 'zustand/middleware';
 import { axiosInstance } from '../utils/axios';
 import { AuthState, LoginCredentials, User } from '../types/auth';
+import { AuthService } from '../proto/genjs/auth/v1/auth_service_connect';
+import { useGrpcClient } from '../utils/connectrpc';
 
 const initialState: AuthState = {
   user: null,
@@ -40,7 +42,10 @@ export const useAuthStore = create<AuthStore>()(
       login: async (credentials: LoginCredentials) => {
         try {
           set({ isLoading: true, error: null });
-          const response = await axiosInstance.post('/auth-service/auth.v1.AuthService/Login', credentials);
+          const response = await useGrpcClient(AuthService).signUp({
+            email: credentials.username,
+            password: credentials.password,
+          });
           const { accessToken, refreshToken } = response.data;
 
           localStorage.setItem('auth_token', accessToken);
