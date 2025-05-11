@@ -4,7 +4,6 @@ import (
 	"auth_service/interfaces/v1/connectrpc"
 	"auth_service/internal/infra"
 	"auth_service/internal/infra/database"
-	"auth_service/internal/middleware"
 	"auth_service/internal/repository"
 	"auth_service/internal/usecase"
 	"context"
@@ -55,11 +54,10 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
-	handlerWithCORS := middleware.CorsMiddleware(mux)
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%s", port),
-		Handler: handlerWithCORS,
+		Handler: mux,
 	}
 
 	c := make(chan os.Signal, 1)
