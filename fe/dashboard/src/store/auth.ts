@@ -4,6 +4,8 @@ import { axiosInstance } from '../utils/axios';
 import { AuthState, LoginCredentials, User } from '../types/auth';
 import { grpcAuthClient } from '../utils/connectrpc';
 import { AuthService } from '../proto/genjs/auth/v1/auth_service_pb';
+import { useNotificationStore } from './notification';
+import { StatusCode } from '../proto/genjs/statusmsg/v1/statusmsg_pb';
 
 
 const initialState: AuthState = {
@@ -47,7 +49,12 @@ export const useAuthStore = create<AuthStore>()(
             email: credentials.username,
             password: credentials.password,
           });
-          const { accessToken, refreshToken } = response;
+          const { accessToken, refreshToken, status } = response;
+          if (status?.code != StatusCode.SUCCESS) {
+            useNotificationStore.getState().error(StatusCode[status?.code ?? 0], status?.extras?.join('\n'));
+            set({ isLoading: false, error: status?.extras?.join('\n') });
+            return;
+          }
 
           localStorage.setItem('auth_token', accessToken);
           if (refreshToken) {
@@ -62,6 +69,7 @@ export const useAuthStore = create<AuthStore>()(
           });
         } catch (error: any) {
           console.log(error);
+          useNotificationStore.getState().success(error.response?.data?.message || 'Login failed. Please try again.');
           const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
           set({
             ...initialState,

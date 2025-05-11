@@ -7,6 +7,7 @@ import { useAuthStore } from './store/auth';
 import { LoginCredentials } from './types/auth';
 import routes from './router';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import NotificationContainer from './components/NotificationContainer';
 
 const App: React.FC = () => {
   const isAuthenticated = localStorage.getItem('auth_token') !== null;
@@ -15,6 +16,7 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
+      <NotificationContainer />
       <Routes>
         {routes.map((route, index) => {
           if (route.type === 'private') {

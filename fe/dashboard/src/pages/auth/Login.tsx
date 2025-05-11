@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Image, Input, message } from 'antd';
+import { Button, Image, Input } from 'antd';
 import { LoginCredentials } from '../../types/auth';
 import { useAuthStore } from '../../store/auth';
 import LayoutPublic from '../../layouts/public';
 import { useNavigate } from 'react-router-dom';
+import { useNotificationStore } from '../../store/notification';
 
 const LoginPage: React.FC = () => {
   const { isAuthenticated, isLoading, error, login, logout, clearError } = useAuthStore();
+  const { addNotification, success, error: showError } = useNotificationStore();
   const navigate = useNavigate();
+
 
   const [credentials, setCredentials] = useState<LoginCredentials>({
     username: '',
@@ -23,7 +26,7 @@ const LoginPage: React.FC = () => {
   const handleLogin = async () => {
 
     if (!credentials.username || !credentials.password) {
-      message.error('Please enter both username and password');
+      success('Please enter both username and password', 'Both fields are required for login');
       return;
     }
 
@@ -33,13 +36,11 @@ const LoginPage: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/');
-      return
+      success('Login successful', 'Welcome back!');
+      return;
     }
-    if (error) {
-      message.error(error);
-      clearError();
-    }
-  }, [error, clearError, isAuthenticated]);
+
+  }, [clearError, isAuthenticated, navigate]);
 
   return (
     <LayoutPublic>
