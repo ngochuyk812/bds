@@ -3,7 +3,7 @@
 pipeline {
     agent any
     environment {
-        NAME = "dashboard"
+        NAME = "fe-dashboard"
     }
     stages {
         stage('Build & Deploy') {
