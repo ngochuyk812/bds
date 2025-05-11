@@ -2,6 +2,8 @@ import { Menu } from "antd";
 import Sider from "antd/es/layout/Sider";
 import type React from "react";
 import {
+    BellOutlined,
+    DashboardOutlined,
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     UploadOutlined,
@@ -9,11 +11,26 @@ import {
     VideoCameraOutlined,
 } from '@ant-design/icons';
 import { Dispatch, SetStateAction, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
     collapsed: boolean
 };
 export default function SiderComponent({ collapsed }: Props) {
+    const navigate = useNavigate();
+
+    const handleMenuClick = (key: string) => {
+        switch (key) {
+            case '1':
+                navigate('/');
+                break;
+            case '2':
+                navigate('/notifications');
+                break;
+            default:
+                break;
+        }
+    };
 
     return (
         <Sider trigger={null} collapsible collapsed={collapsed}>
@@ -22,25 +39,25 @@ export default function SiderComponent({ collapsed }: Props) {
                 theme="dark"
                 mode="inline"
                 defaultSelectedKeys={['1']}
+                onClick={({ key }) => handleMenuClick(key)}
                 items={[
                     {
                         key: '1',
-                        icon: <UserOutlined />,
-                        label: 'nav 1',
+                        icon: <DashboardOutlined />,
+                        label: 'Dashboard',
                     },
                     {
                         key: '2',
-                        icon: <VideoCameraOutlined />,
-                        label: 'nav 2',
+                        icon: <BellOutlined />,
+                        label: 'Notifications',
                     },
                     {
                         key: '3',
-                        icon: <UploadOutlined />,
-                        label: 'nav 3',
+                        icon: <UserOutlined />,
+                        label: 'Users',
                     },
                 ]}
             />
         </Sider>
-
     );
 }

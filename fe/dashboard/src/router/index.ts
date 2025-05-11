@@ -13,6 +13,7 @@ const routePrivates: RouteObject[] = [
         path: '/',
         element: MetricsPage,
     },
+
 ];
 
 

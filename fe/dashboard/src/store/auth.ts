@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, PersistOptions } from 'zustand/middleware';
-import { axiosInstance } from '../utils/axios';
 import { AuthState, LoginCredentials, User } from '../types/auth';
 import { grpcAuthClient } from '../utils/connectrpc';
 import { AuthService } from '../proto/genjs/auth/v1/auth_service_pb';
@@ -69,7 +68,7 @@ export const useAuthStore = create<AuthStore>()(
           });
         } catch (error: any) {
           console.log(error);
-          useNotificationStore.getState().success(error.response?.data?.message || 'Login failed. Please try again.');
+          useNotificationStore.getState().error(error.response?.data?.message || 'Login failed. Please try again.');
           const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
           set({
             ...initialState,
