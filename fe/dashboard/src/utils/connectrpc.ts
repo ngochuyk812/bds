@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import type { DescService } from '@bufbuild/protobuf';
 import { AuthService } from '../proto/genjs/auth/v1/auth_service_pb';
 
-const AUTH_URL = process.env.REACT_APP_API_AUTH_URL || 'https://api-dev.nnh.io.vn';
+const AUTH_URL = process.env.REACT_APP_API_AUTH_URL || 'https://api-dev.nnh.io.vn/auth-service';
 
 
 const transport = createConnectTransport({
