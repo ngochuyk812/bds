@@ -203,7 +203,8 @@ func (s *userService) SignUp(ctx context.Context, req userdto.SignUpCommand) (*u
 		return res, err
 	}
 	if exist != nil && exist.Active {
-		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_EXIST
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.StatusMessage.Extras = []string{ErrUserExist.Error()}
 		return res, nil
 	}
 
@@ -309,11 +310,13 @@ func (s *userService) VerifySignUp(ctx context.Context, req userdto.VerifySignUp
 		return res, err
 	}
 	if exist == nil {
-		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_EXIST
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.StatusMessage.Extras = []string{ErrUserNotFound.Error()}
 		return res, nil
 	}
 	if exist.Active {
-		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_IS_ACTIVE
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.StatusMessage.Extras = []string{ErrUserExist.Error()}
 		return res, nil
 	}
 
@@ -324,7 +327,8 @@ func (s *userService) VerifySignUp(ctx context.Context, req userdto.VerifySignUp
 		return res, nil
 	}
 	if otp != req.Otp {
-		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_INCORRECT_OTP
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.StatusMessage.Extras = []string{ErrOTPIncorrect.Error()}
 		return res, nil
 	}
 
@@ -349,7 +353,8 @@ func (s *userService) RefreshToken(ctx context.Context, req userdto.RefreshToken
 
 	claims, err := auth_context.VerifyJWT(req.RefreshToken, config.SecretKey+"_REFRESH_TOKEN")
 	if err != nil {
-		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_REFRESH_TOKEN_INVALID
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.StatusMessage.Extras = []string{ErrRefreshTokenInvalid.Error()}
 		return res, err
 	}
 
@@ -359,11 +364,13 @@ func (s *userService) RefreshToken(ctx context.Context, req userdto.RefreshToken
 		return res, err
 	}
 	if exist == nil {
-		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_EXIST
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.StatusMessage.Extras = []string{ErrUserNotFound.Error()}
 		return res, nil
 	}
 	if !exist.Active {
-		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_USER_NOT_ACTIVE
+		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
+		res.StatusMessage.Extras = []string{ErrUserNotActive.Error()}
 		return res, nil
 	}
 
