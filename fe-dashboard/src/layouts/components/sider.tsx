@@ -1,4 +1,4 @@
-import { Menu } from "antd";
+import { Image, Menu } from "antd";
 import Sider from "antd/es/layout/Sider";
 import type React from "react";
 import {
@@ -25,7 +25,7 @@ export default function SiderComponent({ collapsed }: Props) {
                 navigate('/');
                 break;
             case '2':
-                navigate('/notifications');
+                navigate('/sites');
                 break;
             default:
                 break;
@@ -34,6 +34,8 @@ export default function SiderComponent({ collapsed }: Props) {
 
     return (
         <Sider trigger={null} collapsible collapsed={collapsed}>
+            <Image src="./logo.png" preview={false} className="max-w-[45%]  m-auto mt-4 mb-8" />
+
             <div className="demo-logo-vertical" />
             <Menu
                 theme="dark"
@@ -49,13 +51,8 @@ export default function SiderComponent({ collapsed }: Props) {
                     {
                         key: '2',
                         icon: <BellOutlined />,
-                        label: 'Notifications',
-                    },
-                    {
-                        key: '3',
-                        icon: <UserOutlined />,
-                        label: 'Users',
-                    },
+                        label: 'Sites',
+                    }
                 ]}
             />
         </Sider>

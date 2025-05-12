@@ -26,6 +26,7 @@ type Props = {
 
 export default function HeaderComponent({ collapsed, setCollapsed }: Props) {
     const { isAuthenticated, isLoading, error, login, logout, clearError } = useAuthStore();
+
     let navigate = useNavigate()
     const {
         token: { colorBgContainer, borderRadiusLG },
@@ -69,7 +70,7 @@ export default function HeaderComponent({ collapsed, setCollapsed }: Props) {
             <Dropdown menu={{ items }} className="mr-5">
                 <a onClick={(e) => e.preventDefault()}>
                     <Button type="primary" >
-                        Thông tin <CaretDownOutlined />
+                        ngochuyk80169@gmail.com <CaretDownOutlined />
                     </Button>
                 </a>
             </Dropdown>

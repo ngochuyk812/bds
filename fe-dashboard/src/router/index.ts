@@ -1,7 +1,8 @@
 import React, { FC } from 'react';
 import LoginPage from '../pages/auth/Login';
-import MetricsPage from '../pages/dashboard/Metrics';
 import SignUpPage from '../pages/auth/SignUp';
+import SitesPage from '../pages/dashboard/Sites';
+import MetricsPage from '../pages/dashboard/Metrics';
 
 interface RouteObject {
     path: string,
@@ -14,7 +15,10 @@ const routePrivates: RouteObject[] = [
         path: '/',
         element: MetricsPage,
     },
-
+    {
+        path: '/sites',
+        element: SitesPage,
+    },
 ];
 
 

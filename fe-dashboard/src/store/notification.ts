@@ -27,6 +27,23 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
       id,
       createdAt: Date.now(),
     };
+    if (!newNotification.description) {
+      newNotification.description = newNotification.message;
+      switch (newNotification.type) {
+        case 'success':
+          newNotification.description = 'Thành công';
+          break;
+        case 'error':
+          newNotification.description = 'Lỗi';
+          break;
+        case 'warning':
+          newNotification.description = 'Cảnh báo';
+          break;
+        case 'info':
+          newNotification.description = 'Thông báo';
+          break;
+      }
+    }
 
     set((state) => ({
       notifications: [...state.notifications, newNotification],

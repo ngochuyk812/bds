@@ -143,8 +143,8 @@ function InputOTP({ isModalOpen, setIsModalOpen, ussername }: InputOTPProps) {
   };
 
   const onFinish = async () => {
-    if (otp.length != 7) {
-      showError('Vui lòng nhập đủ 7 số');
+    if (otp.length != 6) {
+      showError('Vui lòng nhập đủ 6 số');
       return;
     }
     var rsVerify = await verifySignUp({
@@ -178,7 +178,7 @@ function InputOTP({ isModalOpen, setIsModalOpen, ussername }: InputOTPProps) {
       <div className='flex justify-center'>
         <Input.OTP
           size='large'
-          length={7}
+          length={6}
           formatter={(str) => str.toUpperCase()} {...sharedProps} />
       </div>
     </Modal>
