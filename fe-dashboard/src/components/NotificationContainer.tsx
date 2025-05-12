@@ -10,7 +10,7 @@ const NotificationContainer: React.FC = () => {
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col items-end">
+    <div className="fixed top-4 right-4 flex flex-col items-end z-[9999]">
       {notifications.map((notification) => (
         <NotificationItem key={notification.id} notification={notification} />
       ))}

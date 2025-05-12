@@ -4,7 +4,7 @@ import { Button, Image, Input } from 'antd';
 import { LoginCredentials } from '../../types/auth';
 import { useAuthStore } from '../../store/auth';
 import LayoutPublic from '../../layouts/public';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useNotificationStore } from '../../store/notification';
 
 const LoginPage: React.FC = () => {
@@ -45,7 +45,7 @@ const LoginPage: React.FC = () => {
   return (
     <LayoutPublic>
       <div className='h-[100%] flex items-center justify-center'>
-        <div className='bg-white p-12 flex flex-col gap-[25px]'>
+        <div className='bg-white p-12 flex flex-col gap-[25px] mx-5 md:mx-0'>
           <Image src="./logo.png" preview={false} className="max-w-[45%]  m-auto" />
 
           <Input
@@ -75,6 +75,10 @@ const LoginPage: React.FC = () => {
           >
             Đăng nhập
           </Button>
+          <div className='flex justify-end w-full'>
+            <Link to="/register" className='text-primary' >Tạo tài khoản</Link>
+          </div>
+
         </div>
       </div>
     </LayoutPublic>

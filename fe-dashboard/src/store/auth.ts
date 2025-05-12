@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, PersistOptions } from 'zustand/middleware';
-import { AuthState, LoginCredentials, User } from '../types/auth';
+import { AuthState, LoginCredentials, SignUpCredentials, User, VerifySignUpCredentials } from '../types/auth';
 import { grpcAuthClient } from '../utils/connectrpc';
 import { AuthService } from '../proto/genjs/auth/v1/auth_service_pb';
 import { useNotificationStore } from './notification';
@@ -18,6 +18,9 @@ const initialState: AuthState = {
 
 type AuthStore = AuthState & {
   login: (credentials: LoginCredentials) => Promise<void>;
+  signUp: (credentials: SignUpCredentials) => Promise<boolean>;
+  verifySignUp: (credentials: VerifySignUpCredentials) => Promise<boolean>;
+
   logout: () => void;
   setUser: (user: User) => void;
   clearError: () => void;
@@ -77,7 +80,72 @@ export const useAuthStore = create<AuthStore>()(
           });
         }
       },
+      signUp: async (credentials: SignUpCredentials) => {
+        try {
+          set({ isLoading: true, error: null });
+          const response = await grpcAuthClient.signUp({
+            email: credentials.username,
+            password: credentials.password,
+            fullName: credentials.name,
 
+          });
+          const { status } = response;
+          if (status?.code != StatusCode.SUCCESS) {
+            useNotificationStore.getState().error(StatusCode[status?.code ?? 0], status?.extras?.join('\n'));
+            set({ isLoading: false, error: status?.extras?.join('\n') });
+            return false;
+          }
+          set({
+            isLoading: false,
+            error: null,
+          });
+          return true;
+        } catch (error: any) {
+          console.log(error);
+          useNotificationStore.getState().error(error.response?.data?.message || 'Login failed. Please try again.');
+          const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+          set({
+            ...initialState,
+            error: errorMessage,
+            isLoading: false,
+          });
+          return false;
+
+        }
+      },
+
+      verifySignUp: async (credentials: VerifySignUpCredentials) => {
+        try {
+          set({ isLoading: true, error: null });
+          const response = await grpcAuthClient.verifySignUp({
+            email: credentials.username,
+            otp: credentials.otp,
+
+          });
+          const { status } = response;
+          if (status?.code != StatusCode.SUCCESS) {
+            useNotificationStore.getState().error(StatusCode[status?.code ?? 0], status?.extras?.join('\n'));
+            set({ isLoading: false, error: status?.extras?.join('\n') });
+            return false;
+          }
+          set({
+            isLoading: false,
+            error: null,
+          });
+          return true;
+        } catch (error: any) {
+          console.log(error);
+          useNotificationStore.getState().error(error.response?.data?.message || 'Login failed. Please try again.');
+          const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+          set({
+            ...initialState,
+            error: errorMessage,
+            isLoading: false,
+          });
+          return false;
+
+        }
+      },
 
       logout: () => {
         localStorage.removeItem('auth_token');

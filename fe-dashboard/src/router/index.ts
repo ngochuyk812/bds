@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
 import LoginPage from '../pages/auth/Login';
 import MetricsPage from '../pages/dashboard/Metrics';
+import SignUpPage from '../pages/auth/SignUp';
 
 interface RouteObject {
     path: string,
@@ -21,6 +22,10 @@ const routePublics: RouteObject[] = [
     {
         path: '/login',
         element: LoginPage,
+    },
+    {
+        path: '/register',
+        element: SignUpPage,
     },
 ];
 

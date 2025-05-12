@@ -9,6 +9,17 @@ export interface LoginCredentials {
   username: string;
   password: string;
 }
+export interface SignUpCredentials {
+  username: string;
+  password: string;
+  rePassword: string;
+  name: string;
+}
+
+export interface VerifySignUpCredentials {
+  username: string;
+  otp: string;
+}
 
 export interface AuthResponse {
   user: User;

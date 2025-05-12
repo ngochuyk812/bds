@@ -10,7 +10,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import NotificationContainer from './components/NotificationContainer';
 
 const App: React.FC = () => {
-  const isAuthenticated = localStorage.getItem('auth_token') !== null;
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
 
 
