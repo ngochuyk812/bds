@@ -276,7 +276,7 @@ func (s *userService) SignUp(ctx context.Context, req userdto.SignUpCommand) (*u
 		return res, err
 	}
 
-	otp := fmt.Sprintf("%06d", rand.Intn(10000000))
+	otp := fmt.Sprintf("%06d", rand.Intn(1000000))
 	err = cache.Set(ctx, cache.WithPrefix(KEY_CACHE_OTP_SIGNUP, req.Email), otp, 10*time.Minute)
 	if err != nil {
 		res.StatusMessage.Code = statusmsg.StatusCode_STATUS_CODE_UNSPECIFIED
