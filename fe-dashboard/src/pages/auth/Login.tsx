@@ -46,13 +46,13 @@ const LoginPage: React.FC = () => {
     <LayoutPublic>
       <div className='h-[100%] flex items-center justify-center'>
         <div className='bg-white p-12 flex flex-col gap-[25px]'>
-          <Image src="./logo.png" preview={false} className="max-w-[45%] m-auto" />
+          <Image src="./logo.png" preview={false} className="max-w-[45%]  m-auto" />
 
           <Input
             size="large"
             placeholder="Email/Username"
             prefix={<UserOutlined />}
-            className="rounded-none min-w-[350px] text-[14px]"
+            className="rounded-none md:min-w-[350px] text-[14px]"
             name="username"
             value={credentials.username}
             onChange={handleInputChange}
@@ -61,7 +61,7 @@ const LoginPage: React.FC = () => {
             size="large"
             placeholder="Password"
             prefix={<LockOutlined />}
-            className="rounded-none min-w-[350px] text-[14px]"
+            className="rounded-none md:min-w-[350px] text-[14px]"
             type="password"
             name="password"
             value={credentials.password}
