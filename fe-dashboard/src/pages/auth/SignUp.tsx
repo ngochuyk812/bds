@@ -113,7 +113,7 @@ const SignUpPage: React.FC = () => {
             onClick={handleLogin}
             loading={isLoading}
           >
-            Đăng nhập
+            Đăng ký
           </Button>
           <div className='flex justify-end w-full'>
             <Link to="/login" className='text-primary '>Đã có tài khoản? Đăng nhập ngay</Link>
