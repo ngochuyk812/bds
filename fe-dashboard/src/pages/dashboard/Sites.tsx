@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SearchAdvanceFilter } from '../../components/SearchAdvanceFilter';
 import { Button, Table, TableColumnsType } from 'antd';
+import useWindowSize from '../../hooks/useWindowSize';
 
 
 interface DataType {
@@ -15,16 +16,19 @@ const columns: TableColumnsType<DataType> = [
     title: 'Id',
     dataIndex: 'key',
     rowScope: 'row',
+    fixed: 'left',
+    width: 50
   },
-  { title: 'Site Id', dataIndex: 'siteId', key: 'siteId' },
-  { title: 'Name', dataIndex: 'name', key: 'name' },
-  { title: 'Domain', dataIndex: 'domain', key: 'domain' },
+
+  { title: 'Site Id', dataIndex: 'siteId', key: 'siteId', width: 100 },
+  { title: 'Name', dataIndex: 'name', key: 'name', width: 100 },
+  { title: 'Domain', dataIndex: 'domain', key: 'domain', width: 100 },
 
   {
     title: 'Action',
     dataIndex: '',
     key: 'x',
-    width: '10%',
+    width: 100,
     render: () => <div >
       <button className='text-blue-500 mr-4'>Edit</button>
       <button className='text-red-500'>Delete</button>
@@ -61,6 +65,8 @@ const data: DataType[] = [
 
 
 const SitesPage: React.FC = () => {
+  const { width, height } = useWindowSize();
+
   return (
     <div>
       <div className='flex justify-between items-center mb-6'>
@@ -88,6 +94,8 @@ const SitesPage: React.FC = () => {
         expandable={{
           rowExpandable: (record) => record.name !== 'Not Expandable',
         }}
+        virtual
+        scroll={{ x: width - 200 }}
         dataSource={data}
       />
 

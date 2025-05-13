@@ -9,6 +9,8 @@ const AUTH_URL = process.env.REACT_APP_API_AUTH_URL || 'https://api-dev.nnh.io.v
 
 const transport = createConnectTransport({
     baseUrl: AUTH_URL,
+    useBinaryFormat: true,
+
 });
 
 export const grpcAuthClient = createClient<typeof AuthService>(AuthService, transport);

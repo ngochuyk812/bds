@@ -1,4 +1,5 @@
 import { Form, Input, InputNumber, DatePicker, Button, Space, Select } from 'antd';
+import useWindowSize from '../hooks/useWindowSize';
 
 const { RangePicker } = DatePicker;
 
@@ -88,7 +89,7 @@ export const SearchAdvanceFilter: React.FC<Props> = ({ columns, onSearch }) => {
                     </Space>
                 );
             case 'date':
-                return <Form.Item name={col.dataIndex} noStyle><RangePicker /></Form.Item>;
+                return <Form.Item className='max-w-[200px]' name={col.dataIndex}><RangePicker /></Form.Item>;
             default:
                 return <Input placeholder="Search..." />;
         }
@@ -97,7 +98,7 @@ export const SearchAdvanceFilter: React.FC<Props> = ({ columns, onSearch }) => {
     return (
         <Form form={form} layout="inline" onFinish={handleFinish} className='mb-4'>
             {columns.map(col => (
-                <Form.Item key={col.dataIndex} label={col.title} className='mt-4'>
+                <Form.Item key={col.dataIndex} label={col.title} className='mt-4 ' layout='vertical'>
                     {renderField(col)}
                 </Form.Item>
             ))}
