@@ -58,7 +58,7 @@ func main() {
 	})
 
 	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"}, // frontend origin
+		AllowedOrigins:   []string{"http://localhost:3000", "https://fe-dashboard-dev.nnh.io.vn"},
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
