@@ -33,7 +33,7 @@ export default function SiderComponent({ collapsed }: Props) {
     };
 
     return (
-        <Sider trigger={null} collapsible collapsed={collapsed}>
+        <Sider width={250} trigger={null} collapsible collapsed={collapsed}>
             <Image src="./logo.png" preview={false} className="max-w-[45%]  m-auto mt-4 mb-8" />
 
             <div className="demo-logo-vertical" />
