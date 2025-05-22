@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ColumnSearch, FilterItem, SearchAdvanceFilter } from '../../components/SearchAdvanceFilter';
-import { Button, Table, TableColumnsType } from 'antd';
+import { Button, Popconfirm, Table, TableColumnsType } from 'antd';
 import useWindowSize from '../../hooks/useWindowSize';
 import TabelComponent from '../../components/TableComponent';
 import { useTable } from '../../hooks/useTable';
@@ -9,9 +9,11 @@ import { FetchSitesRequest, FetchSitesResponse, SiteModel } from '../../proto/ge
 import { PaginationRequest, PaginationRequestSchema } from '../../proto/genjs/utils/v1/utils_pb';
 import { Message } from '@bufbuild/protobuf';
 import { StatusCode } from '../../proto/genjs/statusmsg/v1/statusmsg_pb';
-import CreateSiteModal from '../../components/CreateEntityModal';
-import CreateEntityModal from '../../components/CreateEntityModal';
+import CreateSiteModal, { FieldConfig } from '../../components/CreateGenericModal';
+import CreateEntityModal from '../../components/CreateGenericModal';
 import { useNotificationStore } from '../../store/notification';
+import CreateGenericModal from '../../components/CreateGenericModal';
+import UpdateGenericModal, { FieldUpdateConfig } from '../../components/UpdateGenericModal';
 
 
 
@@ -20,13 +22,58 @@ import { useNotificationStore } from '../../store/notification';
 
 const searchs: ColumnSearch[] = [
   { dataIndex: 'name', title: 'Name', type: 'string' },
-  { dataIndex: 'siteId', title: 'Site Id', type: 'string' },
   // { dataIndex: 'dob', title: 'Ngày tạo', type: 'date' },
 ]
-
+const fields: FieldConfig[] = [
+  { dataIndex: 'siteId', label: 'Mã site', rules: [{ required: true, message: 'Nhập mã site' }], disabledUpdate: true },
+  { dataIndex: 'name', label: 'Tên site', rules: [{ required: true, message: 'Nhập tên site' }] },
+];
 const SitesPage: React.FC = () => {
   const { width, height } = useWindowSize();
 
+  const columns: TableColumnsType<SiteModel> = [
+    {
+      title: 'Id',
+      dataIndex: 'id',
+      rowScope: 'row',
+      fixed: 'left',
+      width: 0.3
+    },
+
+    { title: 'Site', dataIndex: 'siteId', key: 'siteId', width: 1 },
+    { title: 'Name', dataIndex: 'name', key: 'name', width: 1 },
+    {
+      title: 'Action',
+      dataIndex: '',
+      key: 'x',
+      width: 1,
+      render: (col) => <div className='flex gap-2'>
+        <Button onClick={() => showEditModal(col)} type="primary">Sửa</Button>
+        <Popconfirm
+          title="Xóa site này?"
+          description="Bạn có chắc chắn muốn xóa site này không?"
+          okText="Xác nhận"
+          cancelText="Hủy"
+          onConfirm={() => handleDelete(col)}
+        >
+          <Button type="primary" danger>Xóa</Button>
+        </Popconfirm>
+
+      </div>,
+    },
+  ];
+
+  const handleDelete = (col: SiteModel) => {
+    grpcAuthClient.deleteSite({
+      guid: col.guid
+    }).then((res) => {
+      if (res.status?.code == StatusCode.SUCCESS) {
+        refetch()
+      } else {
+        useNotificationStore.getState().errorExtras(StatusCode[res.status?.code ?? 0], res.status?.extras);
+      }
+    })
+  }
   const handlerCreate = (payload: Record<string, any>) => {
     console.log(payload);
 
@@ -34,14 +81,7 @@ const SitesPage: React.FC = () => {
       ...payload
     }).then((res) => {
       if (res.status?.code == StatusCode.SUCCESS) {
-        fetchData(() => {
-          return grpcAuthClient.fetchSites({
-            pagination: {
-              pageNumber: BigInt(1),
-              pageSize: BigInt(10)
-            }
-          })
-        })
+        refetch()
       } else {
         useNotificationStore.getState().errorExtras(StatusCode[res.status?.code ?? 0], res.status?.extras);
       }
@@ -66,7 +106,7 @@ const SitesPage: React.FC = () => {
     });
   }
 
-  const { data, fetchData } = useTable<FetchSitesRequest, FetchSitesResponse>(
+  const { data, fetchData, refetch } = useTable<FetchSitesRequest, FetchSitesResponse>(
     (): Promise<FetchSitesResponse> => grpcAuthClient.fetchSites({
       pagination: {
         pageNumber: BigInt(1),
@@ -74,40 +114,68 @@ const SitesPage: React.FC = () => {
       }
     }),
   );
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState({
+    create: false,
+    update: false,
+  });
+  const [dataUpdate, setDataUpdate] = useState<{
+    key: any,
+    data: FieldUpdateConfig[]
+  }>();
 
-  const columns: TableColumnsType<SiteModel> = [
-    {
-      title: 'Id',
-      dataIndex: 'id',
-      rowScope: 'row',
-      fixed: 'left',
-      width: 0.3
-    },
+  const handlerUpdate = (payload: Record<string, any>) => {
+    grpcAuthClient.updateSite({
+      ...payload
+    }).then((res) => {
+      if (res.status?.code == StatusCode.SUCCESS) {
+        refetch()
+      } else {
+        useNotificationStore.getState().errorExtras(StatusCode[res.status?.code ?? 0], res.status?.extras);
+      }
+    })
+    console.log(payload);
+  }
 
-    { title: 'Site', dataIndex: 'siteId', key: 'siteId', width: 1 },
-    { title: 'Name', dataIndex: 'name', key: 'name', width: 1 },
-  ];
+  const showEditModal = (col: SiteModel) => {
+    const updatedFields: FieldUpdateConfig[] = fields.map(field => ({
+      ...field,
+      value: col[field.dataIndex as keyof SiteModel],
+    }));
+
+    setDataUpdate({
+      key: col.guid,
+      data: updatedFields
+    });
+    setOpen({ ...open, update: true });
+  }
+
+
   return (
     <div>
       <div className='flex justify-between items-center mb-6'>
         <h1 className='text-2xl '>Quản lý Sites</h1>
-        <Button type="primary" onClick={() => setOpen(true)} >
+        <Button type="primary" onClick={() => setOpen({ ...open, create: true })} >
           Thêm mới
         </Button>
       </div>
-      <CreateEntityModal
+      <CreateGenericModal
         title="Tạo site mới"
-        fields={[
-          { name: 'siteId', label: 'Mã site', rules: [{ required: true, message: 'Nhập mã site' }] },
-          { name: 'name', label: 'Tên site', rules: [{ required: true, message: 'Nhập tên site' }] },
-        ]}
-        open={open}
-        setOpen={setOpen}
+        fields={fields}
+        open={open.create}
+        setOpen={(val: boolean) => setOpen({ ...open, create: val })}
         onCreate={(values) => handlerCreate(values)}
       />
 
-      <TabelComponent<SiteModel> col={columns} searchs={searchs} isEdit={true}
+      <UpdateGenericModal
+        fields={dataUpdate?.data ?? []}
+        id={dataUpdate?.key}
+        open={open.update}
+        setOpen={(val: boolean) => setOpen({ ...open, update: val })}
+        onHandler={(values) => handlerUpdate(values)}
+      />
+
+
+      <TabelComponent<SiteModel> col={columns} searchs={searchs}
         data={
           data?.status?.code == StatusCode.SUCCESS ?
             {

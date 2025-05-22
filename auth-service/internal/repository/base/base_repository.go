@@ -65,11 +65,9 @@ func (r *genericRepository[T]) DeleteByID(ctx context.Context, id int32) error {
 
 func (r *genericRepository[T]) DeleteByGuid(ctx context.Context, guid string) error {
 	now := time.Now().Unix()
-	siteId := r.getSiteId(ctx)
 	return r.db.WithContext(ctx).
 		Model(new(T)).
 		Where("guid = ?", guid).
-		Where("site_id = ?", siteId).
 		Update("deleted_at", now).Error
 }
 

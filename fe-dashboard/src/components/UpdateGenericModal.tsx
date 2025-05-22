@@ -1,35 +1,35 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button, Modal, Form, Input, message } from 'antd';
 import type { FormItemProps } from 'antd';
+import { FieldConfig } from './CreateGenericModal';
 
-type FieldConfig = {
-    name: string;
-    label: string;
-    rules?: FormItemProps['rules'];
-    inputType?: 'text' | 'number' | 'password' | 'date';
-};
+export interface FieldUpdateConfig extends FieldConfig {
+    value: any;
+}
 
-type CreateEntityModalProps = {
+type UpdateGenericModalProps = {
     title?: string;
     open: boolean;
     setOpen: (val: boolean) => void;
-    onCreate: (values: Record<string, any>) => void;
-    fields: FieldConfig[];
+    onHandler: (values: Record<string, any>) => void;
+    fields: FieldUpdateConfig[];
+    id: string;
 };
 
-const CreateEntityModal: React.FC<CreateEntityModalProps> = ({
-    title = 'Tạo mới',
+const UpdateGenericModal: React.FC<UpdateGenericModalProps> = ({
+    title = 'Cập nhật',
     open,
     setOpen,
-    onCreate,
+    onHandler,
     fields,
+    id
 }) => {
     const [form] = Form.useForm();
 
     const handleOk = async () => {
         try {
             const values = await form.validateFields();
-            onCreate(values);
+            onHandler({ ...values, guid: id });
             setOpen(false);
             form.resetFields();
             message.success('Tạo thành công!');
@@ -43,24 +43,37 @@ const CreateEntityModal: React.FC<CreateEntityModalProps> = ({
         form.resetFields();
     };
 
+    useEffect(() => {
+        if (open) {
+            const initialValues = fields.reduce((acc, field) => {
+                acc[field.dataIndex] = field.value;
+                return acc;
+            }, {} as Record<string, any>);
+            form.setFieldsValue(initialValues);
+        } else {
+            form.resetFields();
+        }
+    }, [open, fields, form]);
+
     return (
         <Modal
             title={title}
             open={open}
             onOk={handleOk}
             onCancel={handleCancel}
-            okText="Tạo"
+            okText="Cập nhật"
             cancelText="Hủy"
         >
             <Form form={form} layout="vertical">
                 {fields.map((field) => (
                     <Form.Item
-                        key={field.name}
-                        name={field.name}
+                        key={field.dataIndex}
+                        name={field.dataIndex}
                         label={field.label}
                         rules={field.rules}
+                        initialValue={field.value}
                     >
-                        <Input type={field.inputType ?? 'text'} />
+                        <Input type={field.inputType ?? 'text'} disabled={field.disabledUpdate} />
                     </Form.Item>
                 ))}
             </Form>
@@ -68,4 +81,4 @@ const CreateEntityModal: React.FC<CreateEntityModalProps> = ({
     );
 };
 
-export default CreateEntityModal;
+export default UpdateGenericModal;

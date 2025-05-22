@@ -32,7 +32,7 @@ export const useTable = <P extends object, R>(
     data,
     loading,
     error,
-    refetch: fetchData,
+    refetch: () => fetchData(fn),
     fetchData,
   };
 };

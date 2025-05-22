@@ -9,8 +9,6 @@ import { ColumnSearch, FilterItem, SearchAdvanceFilter } from './SearchAdvanceFi
 interface TabelComponentProps<T> {
     col: TableColumnsType<T>;
     searchs: ColumnSearch[]
-    isEdit?: boolean;
-    isDelete?: boolean;
     data?: PaginationData<T>;
     onChangePage: (page: number, pageSize: number) => void;
     onSearch?: (payload: FilterItem[]) => void;
@@ -26,23 +24,6 @@ interface PaginationData<T> {
 const TabelComponent = <T,>(props: TabelComponentProps<T>) => {
     const { width, height } = useWindowSize();
     var col = props.col;
-
-    if (props.isEdit || props.isDelete)
-        col = [
-            ...props.col,
-            {
-                title: 'Action',
-                dataIndex: '',
-                key: 'x',
-                width: 1,
-                render: () => <div >
-                    {props.isEdit && <button className='text-blue-500 mr-4'>Edit</button>}
-                    {props.isDelete && <button className='text-red-500'>Delete</button>}
-                </div>,
-            },
-        ];
-
-
 
     return (
         <div>
