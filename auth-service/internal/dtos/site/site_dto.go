@@ -4,7 +4,7 @@ import "github.com/ngochuyk812/proto-bds/gen/statusmsg/v1"
 
 type CreateSiteCommand struct {
 	Name   string `json:"name" validate:"required"`
-	SiteId string `json:"site_id" validate:"required,min=10"`
+	SiteId string `json:"site_id" validate:"required"`
 }
 
 type CreateSiteCommandResponse struct {
@@ -29,6 +29,8 @@ type DeleteSiteCommandResponse struct {
 type FetchSitesQuery struct {
 	Page     int32
 	PageSize int32
+	Name     string
+	SiteId   int32
 }
 
 type SiteModel struct {

@@ -5,6 +5,7 @@ type NotificationStore = NotificationState & {
   addNotification: (notification: Omit<Notification, 'id' | 'createdAt'>) => string;
   success: (message: string, description?: string, duration?: number) => string;
   error: (message: string, description?: string, duration?: number) => string;
+  errorExtras: (message: string, extras?: string[], duration?: number) => string;
   warning: (message: string, description?: string, duration?: number) => string;
   info: (message: string, description?: string, duration?: number) => string;
   removeNotification: (id: string) => void;
@@ -72,6 +73,9 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
 
   error: (message, description, duration = 5000) =>
     get().addNotification({ type: 'error', message, description, duration }),
+
+  errorExtras: (message, extras, duration = 5000) =>
+    get().addNotification({ type: 'error', message, description: extras?.join('\n'), duration }),
 
   warning: (message, description, duration = 4000) =>
     get().addNotification({ type: 'warning', message, description, duration }),

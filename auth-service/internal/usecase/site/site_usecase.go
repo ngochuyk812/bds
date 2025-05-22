@@ -100,7 +100,7 @@ func (s *siteUseCase) DeleteSite(ctx context.Context, req sitedto.DeleteSiteComm
 }
 
 func (s *siteUseCase) GetSitesPaging(ctx context.Context, req sitedto.FetchSitesQuery) (*sitedto.FetchSitesResponse, error) {
-	paging, err := s.Cabin.GetUnitOfWork().GetSiteRepository().GetSitesPaging(ctx, req.Page, req.PageSize)
+	paging, err := s.Cabin.GetUnitOfWork().GetSiteRepository().GetSitesPaging(ctx, req.Page, req.PageSize, req.Name, req.SiteId)
 	if err != nil {
 		return nil, err
 	}

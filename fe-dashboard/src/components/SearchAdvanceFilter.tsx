@@ -1,31 +1,33 @@
-import { Form, Input, InputNumber, DatePicker, Button, Space, Select } from 'antd';
-import useWindowSize from '../hooks/useWindowSize';
+import { Form, Input, InputNumber, DatePicker, Space } from 'antd';
+import { useEffect, useMemo, useCallback } from 'react';
+import debounce from 'lodash.debounce';
 
 const { RangePicker } = DatePicker;
 
-interface Column {
+export interface ColumnSearch {
     dataIndex: string;
     title: string;
     type: 'string' | 'number' | 'date';
 }
 
-interface FilterItem {
+export interface FilterItem {
     filterCol: string;
     filterType: 'equals' | 'contains' | 'greaterThan' | 'lessThan';
     value: any;
 }
 
 interface Props {
-    columns: Column[];
+    columns: ColumnSearch[];
     onSearch: (filters: FilterItem[]) => void;
 }
 
 export const SearchAdvanceFilter: React.FC<Props> = ({ columns, onSearch }) => {
     const [form] = Form.useForm();
 
-    const handleFinish = (values: any) => {
-        const filters: FilterItem[] = [];
 
+
+    const handleFinish = useCallback((values: any) => {
+        const filters: FilterItem[] = [];
         for (const col of columns) {
             const value = values[col.dataIndex];
 
@@ -73,17 +75,25 @@ export const SearchAdvanceFilter: React.FC<Props> = ({ columns, onSearch }) => {
         }
 
         onSearch(filters);
-    };
+    }, [columns, onSearch]);
 
-    const renderField = (col: Column) => {
+    const debouncedFinish = useMemo(() => debounce(handleFinish, 500), [handleFinish]);
+
+    useEffect(() => {
+        return () => {
+            debouncedFinish.cancel();
+        };
+    }, [debouncedFinish]);
+    const renderField = (col: ColumnSearch) => {
+
         switch (col.type) {
             case 'number':
                 return (
                     <Space>
-                        <Form.Item name={[col.dataIndex, 0]} noStyle>
+                        <Form.Item name={[col.dataIndex, 0]} >
                             <InputNumber placeholder="Min" />
                         </Form.Item>
-                        <Form.Item name={[col.dataIndex, 1]} noStyle>
+                        <Form.Item name={[col.dataIndex, 1]} >
                             <InputNumber placeholder="Max" />
                         </Form.Item>
                     </Space>
@@ -91,22 +101,27 @@ export const SearchAdvanceFilter: React.FC<Props> = ({ columns, onSearch }) => {
             case 'date':
                 return <Form.Item className='max-w-[200px]' name={col.dataIndex}><RangePicker /></Form.Item>;
             default:
-                return <Input placeholder="Search..." />;
+                return <Form.Item name={col.dataIndex}><Input placeholder="Search..." /></Form.Item>;
         }
     };
 
+    const handleValuesChange = useCallback((_: any, allValues: any) => {
+        debouncedFinish(allValues);
+    }, [debouncedFinish]);
+
     return (
-        <Form form={form} layout="inline" onFinish={handleFinish} className='mb-4'>
+        <Form
+            form={form}
+            layout="inline"
+            onFinish={handleFinish}
+            className='mb-4'
+            onValuesChange={handleValuesChange}
+        >
             {columns.map(col => (
                 <Form.Item key={col.dataIndex} label={col.title} className='mt-4 ' layout='vertical'>
                     {renderField(col)}
                 </Form.Item>
             ))}
-
-
-            {/* <Form.Item>
-                <Button htmlType="submit" type="primary" className='mt-4'>Tìm kiếm</Button>
-            </Form.Item> */}
         </Form>
     );
 };

@@ -4,6 +4,7 @@ import (
 	"auth_service/internal/entities"
 	repositorybase "auth_service/internal/repository/base"
 	"context"
+	"errors"
 
 	"github.com/ngochuyk812/building_block/pkg/dtos"
 	"gorm.io/gorm"
@@ -11,7 +12,7 @@ import (
 
 type SiteRepository interface {
 	GetSiteBySiteId(ctx context.Context, siteId string) (*entities.Site, error)
-	GetSitesPaging(ctx context.Context, page, size int32) (*dtos.PagingModel[*entities.Site], error)
+	GetSitesPaging(ctx context.Context, page, size int32, name string, siteId int32) (*dtos.PagingModel[*entities.Site], error)
 	GetBaseRepository() repositorybase.Repository[entities.Site]
 }
 
@@ -33,13 +34,18 @@ func (r *siteRepository) GetBaseRepository() repositorybase.Repository[entities.
 func (r *siteRepository) GetSiteBySiteId(ctx context.Context, siteId string) (*entities.Site, error) {
 	var site entities.Site
 	err := r.db.WithContext(ctx).Where("site_id = ? AND deleted_at IS NULL", siteId).First(&site).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
 	if err != nil {
 		return nil, err
 	}
 	return &site, nil
 }
 
-func (r *siteRepository) GetSitesPaging(ctx context.Context, page, size int32) (*dtos.PagingModel[*entities.Site], error) {
+func (r *siteRepository) GetSitesPaging(ctx context.Context, page, size int32, name string, siteId int32) (*dtos.PagingModel[*entities.Site], error) {
 	res := &dtos.PagingModel[*entities.Site]{}
 
 	var sites []*entities.Site
@@ -47,9 +53,19 @@ func (r *siteRepository) GetSitesPaging(ctx context.Context, page, size int32) (
 
 	offset := (page - 1) * size
 
-	err := r.db.WithContext(ctx).
+	query := r.db.WithContext(ctx).
+		Model(&entities.Site{}).
 		Where("deleted_at IS NULL").
 		Order("created_at DESC").
+		Where("name LIKE ?", "%"+name+"%")
+
+	err := query.
+		Count(&total).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = query.
 		Limit(int(size)).
 		Offset(int(offset)).
 		Find(&sites).Error
@@ -57,16 +73,6 @@ func (r *siteRepository) GetSitesPaging(ctx context.Context, page, size int32) (
 	if err != nil {
 		return nil, err
 	}
-
-	err = r.db.WithContext(ctx).
-		Model(&entities.Site{}).
-		Where("deleted_at IS NULL").
-		Count(&total).Error
-
-	if err != nil {
-		return nil, err
-	}
-
 	res.Items = sites
 	res.Total = int(total)
 

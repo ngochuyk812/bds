@@ -71,6 +71,7 @@ func (s *authServerHandler) FetchSites(ctx context.Context, req *connect.Request
 	result, err := s.usecaseManager.GetSiteUseCase().GetSitesPaging(ctx, sitedto.FetchSitesQuery{
 		Page:     pageNumber,
 		PageSize: pageSize,
+		Name:     req.Msg.GetName(),
 	})
 
 	if err != nil {

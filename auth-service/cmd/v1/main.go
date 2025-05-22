@@ -16,6 +16,7 @@ import (
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/ngochuyk812/building_block/infrastructure/logger"
+	"github.com/rs/cors"
 
 	infrastructurecore "github.com/ngochuyk812/building_block/infrastructure/core"
 	"github.com/ngochuyk812/building_block/pkg/config"
@@ -33,6 +34,7 @@ func main() {
 	policiesPath := &map[string][]string{
 		// "/greet.v1.GreetService/Greet": {"user"},
 	}
+
 	config := config.NewConfigEnv()
 	config.PoliciesPath = policiesPath
 	infrast := infrastructurecore.NewInfra()
@@ -55,9 +57,16 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"}, // frontend origin
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	}).Handler(mux)
+
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%s", port),
-		Handler: mux,
+		Handler: corsHandler,
 	}
 
 	c := make(chan os.Signal, 1)
