@@ -20,7 +20,7 @@ type AuthStore = AuthState & {
   login: (credentials: LoginCredentials) => Promise<void>;
   signUp: (credentials: SignUpCredentials) => Promise<boolean>;
   verifySignUp: (credentials: VerifySignUpCredentials) => Promise<boolean>;
-
+  refreshLogin: () => Promise<boolean>;
   logout: () => void;
   setUser: (user: User) => void;
   clearError: () => void;
@@ -152,7 +152,44 @@ export const useAuthStore = create<AuthStore>()(
         localStorage.removeItem('refresh_token');
         set(initialState);
       },
+      refreshLogin: async () => {
+        localStorage.removeItem('auth_token');
+        let refreshToken = localStorage.getItem('refresh_token');
 
+        if (!refreshToken) {
+          set(initialState);
+          return false;
+        }
+
+        try {
+          let rs = await grpcAuthClient.refreshToken({
+            refreshToken: localStorage.getItem('refresh_token') || ''
+          })
+          if (rs.status?.code != StatusCode.SUCCESS) {
+            useNotificationStore.getState().error(StatusCode[rs.status?.code ?? 0], rs.status?.extras?.join('\n'));
+            localStorage.removeItem('refresh_token');
+            set(initialState);
+            return false;
+          }
+          localStorage.setItem('auth_token', rs.accessToken);
+          if (rs.refreshToken) {
+            localStorage.setItem('refresh_token', rs.refreshToken);
+          }
+          set({
+            accessToken: rs.accessToken,
+            refreshToken: rs.refreshToken || null,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+          return true;
+
+        } catch (error: any) {
+          localStorage.removeItem('refresh_token');
+          set(initialState);
+          return false;
+        }
+      },
 
       setUser: (user: User) => {
         set({ user });
