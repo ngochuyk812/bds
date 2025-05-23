@@ -15,6 +15,7 @@ import { useNotificationStore } from '../../store/notification';
 import CreateGenericModal from '../../components/CreateGenericModal';
 import UpdateGenericModal, { FieldUpdateConfig } from '../../components/UpdateGenericModal';
 import { AmenityModel, FetchAmenitiesRequest, FetchAmenitiesResponse, SearchAdvanceAmenitiesResponse } from '../../proto/genjs/property/v1/amenity_pb';
+import { convertFilterToSearchAdvance } from '../../helpers/convertFiterToSearchAdvance';
 
 
 
@@ -74,7 +75,7 @@ const AmenitiesPage: React.FC = () => {
   ];
 
   const handleDelete = (col: SiteModel) => {
-    grpcAuthClient.deleteSite({
+    grpcPropertyClient.deleteAmenity({
       guid: col.guid
     }).then((res) => {
       if (res.status?.code == StatusCode.SUCCESS) {
@@ -98,18 +99,26 @@ const AmenitiesPage: React.FC = () => {
     })
   }
   const handlerSearch = (payload: FilterItem[]) => {
-    const filters = payload.reduce((acc, filter) => {
-      if (filter.filterCol === 'name' || filter.filterCol === 'siteId') {
-        acc[filter.filterCol] = filter.value;
-      }
-      return acc;
-    }, {} as Record<string, string>);
+    const filters = {
+      filters: convertFilterToSearchAdvance(payload)
+    };
 
     fetchData(() => {
       return grpcFetchData(filters);
     });
   }
-
+  const handlerUpdate = (payload: Record<string, any>) => {
+    grpcPropertyClient.updateAmenity({
+      ...payload
+    }).then((res) => {
+      if (res.status?.code == StatusCode.SUCCESS) {
+        refetch()
+      } else {
+        useNotificationStore.getState().errorExtras(StatusCode[res.status?.code ?? 0], res.status?.extras);
+      }
+    })
+    console.log(payload);
+  }
   const { data, fetchData, refetch } = useTable<SearchAdvanceRequest, SearchAdvanceAmenitiesResponse>(
     (): Promise<SearchAdvanceAmenitiesResponse> => grpcFetchData({}),
   );
@@ -122,18 +131,7 @@ const AmenitiesPage: React.FC = () => {
     data: FieldUpdateConfig[]
   }>();
 
-  const handlerUpdate = (payload: Record<string, any>) => {
-    grpcAuthClient.updateSite({
-      ...payload
-    }).then((res) => {
-      if (res.status?.code == StatusCode.SUCCESS) {
-        refetch()
-      } else {
-        useNotificationStore.getState().errorExtras(StatusCode[res.status?.code ?? 0], res.status?.extras);
-      }
-    })
-    console.log(payload);
-  }
+
 
   const showEditModal = (col: SiteModel) => {
     const updatedFields: FieldUpdateConfig[] = fields.map(field => ({
