@@ -42,7 +42,7 @@ type repository[T any] struct {
 
 func (r *repository[T]) SearchAdvance(ctx context.Context, query dtos.SearchAdvanceModel) (*dtos.SearchAdvanceResponse[T], error) {
 	res := &dtos.SearchAdvanceResponse[T]{}
-	filter := buildMongoFilter(query.Filters)
+	filter := buildMongoFilter(ctx, query.Filters)
 	skip := int64(query.StartRow)
 	limit := int64(query.EndRow - query.StartRow)
 	sort := buildMongoSort(query.Sort)
@@ -199,8 +199,8 @@ func (r *repository[T]) DeleteByGuid(ctx context.Context, guid string) error {
 	return nil
 }
 
-func buildMongoFilter(filters map[string]dtos.FilterModel) bson.M {
-	mongoFilter := db_helper.BuildFilter(context.Background(), bson.M{})
+func buildMongoFilter(ctx context.Context, filters map[string]dtos.FilterModel) bson.M {
+	mongoFilter := db_helper.BuildFilter(ctx, bson.M{})
 
 	for field, cond := range filters {
 		switch cond.Type {
