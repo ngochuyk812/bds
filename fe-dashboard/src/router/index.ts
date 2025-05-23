@@ -3,6 +3,7 @@ import LoginPage from '../pages/auth/Login';
 import SignUpPage from '../pages/auth/SignUp';
 import SitesPage from '../pages/dashboard/Sites';
 import MetricsPage from '../pages/dashboard/Metrics';
+import AmenitiesPage from '../pages/dashboard/Amenities';
 
 interface RouteObject {
     path: string,
@@ -18,6 +19,10 @@ const routePrivates: RouteObject[] = [
     {
         path: '/sites',
         element: SitesPage,
+    },
+    {
+        path: '/amenities',
+        element: AmenitiesPage,
     },
 ];
 

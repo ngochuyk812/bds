@@ -4,6 +4,8 @@ import type React from "react";
 import {
     BellOutlined,
     DashboardOutlined,
+    DatabaseOutlined,
+    GroupOutlined,
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     UploadOutlined,
@@ -27,6 +29,9 @@ export default function SiderComponent({ collapsed }: Props) {
             case '2':
                 navigate('/sites');
                 break;
+            case '3-1':
+                navigate('/amenities');
+                break;
             default:
                 break;
         }
@@ -46,13 +51,25 @@ export default function SiderComponent({ collapsed }: Props) {
                     {
                         key: '1',
                         icon: <DashboardOutlined />,
-                        label: 'Dashboard',
+                        label: 'Thống kê',
                     },
                     {
                         key: '2',
-                        icon: <BellOutlined />,
-                        label: 'Sites',
-                    }
+                        icon: <GroupOutlined />,
+                        label: 'Quản lý trang',
+                    },
+                    {
+                        key: '3',
+                        icon: <DatabaseOutlined />,
+                        label: 'Danh mục hệ thống',
+                        children: [
+                            {
+                                key: '3-1',
+                                label: 'Tiện ích',
+                            },
+
+                        ],
+                    },
                 ]}
             />
         </Sider>
