@@ -92,6 +92,7 @@ func (p *propertyServerHandler) SearchAdvanceAmenities(ctx context.Context, req 
 			Sort:  sort.GetSort(),
 		})
 	}
+
 	result, err := p.cabin.GetUnitOfWork().GetAmenityRepository().GetBaseRepo().SearchAdvance(ctx, query)
 	if err != nil {
 		res.Msg.Status.Code = statusmsg.StatusCode_STATUS_CODE_VALIDATION_FAILED
